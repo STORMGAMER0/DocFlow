@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Document Processing Pipeline - PRD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        h2 {
+            color: #34495e;
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        
+        h4 {
+            color: #34495e;
+            font-size: 16px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .info-box {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .tech-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 3px;
+        }
+        
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #229954;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .download-btn {
+                display: none;
+            }
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .architecture-note {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <button class="download-btn" onclick="downloadPDF()">📥 Download as PDF</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Distributed Document Processing Pipeline</h1>
+            <p style="font-size: 18px; color: #7f8c8d; margin-top: 10px;">Product Requirements Document (PRD)</p>
+            <div class="subtitle">
+                <strong>Version:</strong> 1.0<br>
+                <strong>Date:</strong> January 2026<br>
+                <strong>Status:</strong> Draft for Development
+            </div>
+        </div>
+
+        <h2>1. Executive Summary</h2>
+        <p>
+            This document outlines the requirements for building a production-grade Distributed Document Processing Pipeline using FastAPI. The system is designed to handle enterprise-scale document processing workflows with AI/ML integration, implementing modern cloud-native patterns including microservices architecture, event-driven design, and horizontal scalability.
+        </p>
+        
+        <div class="info-box">
+            <strong>Project Goal:</strong> Build a scalable, cloud-native document processing system that can ingest, process, analyze, and search through thousands of documents concurrently with AI-powered insights.
+        </div>
+
+        <h3>1.1 Key Objectives</h3>
+        <ul>
+            <li>Process multiple document formats (PDF, images) at scale</li>
+            <li>Extract text using OCR technology with high accuracy</li>
+            <li>Perform NLP analysis including sentiment analysis and entity extraction</li>
+            <li>Enable full-text search capabilities across processed documents</li>
+            <li>Provide real-time progress tracking for long-running jobs</li>
+            <li>Ensure system reliability, scalability, and observability</li>
+        </ul>
+
+        <h2>2. System Architecture Overview</h2>
+        
+        <h3>2.1 Architectural Pattern</h3>
+        <p>
+            The system follows a microservices architecture with event-driven communication patterns. Services are loosely coupled and communicate through message queues, enabling independent scaling and deployment.
+        </p>
+
+        <div class="architecture-note">
+            <strong>Architecture Type:</strong> Event-Driven Microservices<br>
+            <strong>Communication:</strong> Asynchronous (Message Queue) + Synchronous (REST API)<br>
+            <strong>Deployment:</strong> Containerized (Docker) with Kubernetes orchestration
+        </div>
+
+        <h3>2.2 Core Microservices</h3>
+        <table>
+            <tr>
+                <th>Service Name</th>
+                <th>Responsibility</th>
+                <th>Technology Stack</th>
+            </tr>
+            <tr>
+                <td><strong>API Gateway Service</strong></td>
+                <td>Handle client requests, authentication, rate limiting</td>
+                <td>FastAPI, Redis</td>
+            </tr>
+            <tr>
+                <td><strong>Upload Service</strong></td>
+                <td>Manage document uploads to S3/MinIO, generate presigned URLs</td>
+                <td>FastAPI, boto3, MinIO SDK</td>
+            </tr>
+            <tr>
+                <td><strong>Processing Orchestrator</strong></td>
+                <td>Coordinate processing workflow, manage job state</td>
+                <td>FastAPI, Celery, Redis</td>
+            </tr>
+            <tr>
+                <td><strong>OCR Service</strong></td>
+                <td>Extract text from documents using OCR</td>
+                <td>Tesseract, AWS Textract, OpenCV</td>
+            </tr>
+            <tr>
+                <td><strong>NLP Analysis Service</strong></td>
+                <td>Perform sentiment analysis, entity extraction</td>
+                <td>spaCy, OpenAI API, Transformers</td>
+            </tr>
+            <tr>
+                <td><strong>Search Service</strong></td>
+                <td>Index and search processed documents</td>
+                <td>Elasticsearch, FastAPI</td>
+            </tr>
+            <tr>
+                <td><strong>Notification Service</strong></td>
+                <td>Send job completion notifications</td>
+                <td>FastAPI, SendGrid/SES</td>
+            </tr>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h2>3. Functional Requirements</h2>
+
+        <h3>3.1 Document Upload</h3>
+        <h4>FR-1.1: Direct Upload</h4>
+        <ul>
+            <li>Users can upload documents via REST API endpoints</li>
+            <li>Support formats: PDF, PNG, JPEG, TIFF</li>
+            <li>Maximum file size: 50MB per document</li>
+            <li>Batch upload support (up to 10 documents per request)</li>
+        </ul>
+
+        <h4>FR-1.2: Presigned URL Upload</h4>
+        <ul>
+            <li>Generate secure presigned URLs for direct S3/MinIO uploads</li>
+            <li>URL expiration: 15 minutes</li>
+            <li>Include upload progress tracking</li>
+            <li>Validate file type and size before generating URL</li>
+        </ul>
+
+        <h4>FR-1.3: Upload Validation</h4>
+        <ul>
+            <li>Validate file format and MIME type</li>
+            <li>Scan for malware using ClamAV integration</li>
+            <li>Check file integrity (checksum validation)</li>
+            <li>Return detailed error messages for failed uploads</li>
+        </ul>
+
+        <h3>3.2 Document Processing</h3>
+        <h4>FR-2.1: OCR and Text Extraction</h4>
+        <ul>
+            <li>Support both Tesseract (open-source) and AWS Textract (cloud)</li>
+            <li>Automatic language detection</li>
+            <li>Support for multi-page documents</li>
+            <li>Extract metadata (page count, dimensions, creation date)</li>
+            <li>Preserve document structure (headings, paragraphs, tables)</li>
+        </ul>
+
+        <h4>FR-2.2: NLP Analysis</h4>
+        <ul>
+            <li><strong>Sentiment Analysis:</strong> Classify document sentiment (positive, negative, neutral) with confidence scores</li>
+            <li><strong>Entity Extraction:</strong> Identify persons, organizations, locations, dates, monetary values</li>
+            <li><strong>Topic Classification:</strong> Categorize documents into predefined categories</li>
+            <li><strong>Key Phrase Extraction:</strong> Extract important terms and concepts</li>
+            <li><strong>Language Detection:</strong> Identify document language</li>
+        </ul>
+
+        <h4>FR-2.3: Processing Pipeline</h4>
+        <ul>
+            <li>Queue-based asynchronous processing</li>
+            <li>Configurable processing stages (OCR → NLP → Indexing)</li>
+            <li>Retry mechanism with exponential backoff</li>
+            <li>Dead letter queue for failed jobs</li>
+            <li>Priority queue support for urgent documents</li>
+        </ul>
+
+        <h3>3.3 Search and Retrieval</h3>
+        <h4>FR-3.1: Full-Text Search</h4>
+        <ul>
+            <li>Search across all processed document content</li>
+            <li>Support for fuzzy matching and typo tolerance</li>
+            <li>Boolean operators (AND, OR, NOT)</li>
+            <li>Phrase search with exact matching</li>
+            <li>Highlighting of search terms in results</li>
+        </ul>
+
+        <h4>FR-3.2: Filtered Search</h4>
+        <ul>
+            <li>Filter by document metadata (upload date, file type, size)</li>
+            <li>Filter by NLP results (sentiment, entities, topics)</li>
+            <li>Date range filtering</li>
+            <li>Custom field filtering</li>
+        </ul>
+
+        <h4>FR-3.3: Search Results</h4>
+        <ul>
+            <li>Paginated results (configurable page size)</li>
+            <li>Relevance scoring and ranking</li>
+            <li>Result snippets with context</li>
+            <li>Aggregations and faceted search</li>
+            <li>Export search results (JSON, CSV)</li>
+        </ul>
+
+        <h3>3.4 Progress Tracking</h3>
+        <h4>FR-4.1: Job Status Tracking</h4>
+        <ul>
+            <li>Real-time job status updates (queued, processing, completed, failed)</li>
+            <li>Percentage completion for each processing stage</li>
+            <li>Estimated time remaining</li>
+            <li>Error details for failed jobs</li>
+        </ul>
+
+        <h4>FR-4.2: Status Retrieval</h4>
+        <ul>
+            <li>REST API endpoint to query job status</li>
+            <li>WebSocket support for real-time updates</li>
+            <li>Batch status queries (check multiple jobs)</li>
+            <li>Job history and audit trail</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>4. Non-Functional Requirements</h2>
+
+        <h3>4.1 Performance</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Target</th>
+                <th>Measurement Method</th>
+            </tr>
+            <tr>
+                <td>API Response Time (p95)</td>
+                <td>&lt; 200ms</td>
+                <td>Prometheus metrics</td>
+            </tr>
+            <tr>
+                <td>Document Processing Throughput</td>
+                <td>100 docs/minute (per worker)</td>
+                <td>Queue metrics</td>
+            </tr>
+            <tr>
+                <td>Search Query Latency (p95)</td>
+                <td>&lt; 500ms</td>
+                <td>Elasticsearch metrics</td>
+            </tr>
+            <tr>
+                <td>Upload Bandwidth</td>
+                <td>50MB/s per instance</td>
+                <td>Network monitoring</td>
+            </tr>
+            <tr>
+                <td>Concurrent Users</td>
+                <td>1000+ simultaneous</td>
+                <td>Load testing</td>
+            </tr>
+        </table>
+
+        <h3>4.2 Scalability</h3>
+        <ul>
+            <li><strong>Horizontal Scaling:</strong> All services must support horizontal scaling via container replication</li>
+            <li><strong>Auto-scaling:</strong> CPU-based auto-scaling (scale at 70% CPU utilization)</li>
+            <li><strong>Load Balancing:</strong> Round-robin load balancing with health checks</li>
+            <li><strong>Queue Management:</strong> Dynamic worker scaling based on queue depth</li>
+            <li><strong>Database Sharding:</strong> Support for database partitioning for future growth</li>
+        </ul>
+
+        <h3>4.3 Reliability</h3>
+        <ul>
+            <li><strong>Availability:</strong> 99.9% uptime SLA</li>
+            <li><strong>Fault Tolerance:</strong> Graceful degradation when services fail</li>
+            <li><strong>Data Durability:</strong> 99.999999999% (11 nines) via S3/MinIO replication</li>
+            <li><strong>Backup:</strong> Daily automated backups with 30-day retention</li>
+            <li><strong>Disaster Recovery:</strong> RPO &lt; 1 hour, RTO &lt; 4 hours</li>
+        </ul>
+
+        <h3>4.4 Security</h3>
+        <ul>
+            <li><strong>Authentication:</strong> JWT-based authentication with refresh tokens</li>
+            <li><strong>Authorization:</strong> Role-based access control (RBAC)</li>
+            <li><strong>Encryption:</strong> TLS 1.3 for data in transit, AES-256 for data at rest</li>
+            <li><strong>API Security:</strong> Rate limiting (100 req/min per user), API key rotation</li>
+            <li><strong>Secrets Management:</strong> HashiCorp Vault or AWS Secrets Manager</li>
+            <li><strong>Audit Logging:</strong> Comprehensive logging of all security events</li>
+        </ul>
+
+        <h3>4.5 Observability</h3>
+        <ul>
+            <li><strong>Metrics:</strong> Prometheus for metrics collection and storage</li>
+            <li><strong>Visualization:</strong> Grafana dashboards for system monitoring</li>
+            <li><strong>Logging:</strong> Centralized logging with ELK stack (Elasticsearch, Logstash, Kibana)</li>
+            <li><strong>Tracing:</strong> Distributed tracing with Jaeger or OpenTelemetry</li>
+            <li><strong>Alerting:</strong> Automated alerts for critical errors and SLA breaches</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>5. Technical Specifications</h2>
+
+        <h3>5.1 Technology Stack</h3>
+        
+        <h4>Backend Framework</h4>
+        <p>
+            <span class="tech-badge">FastAPI 0.109+</span>
+            <span class="tech-badge">Python 3.11+</span>
+            <span class="tech-badge">Pydantic 2.0+</span>
+        </p>
+
+        <h4>Message Queue</h4>
+        <p>
+            <span class="tech-badge">RabbitMQ 3.12+</span> or <span class="tech-badge">AWS SQS</span>
+            <span class="tech-badge">Celery 5.3+</span>
+        </p>
+
+        <h4>Storage</h4>
+        <p>
+            <span class="tech-badge">AWS S3</span> or <span class="tech-badge">MinIO</span>
+            <span class="tech-badge">PostgreSQL 15+</span>
+            <span class="tech-badge">Redis 7.0+</span>
+        </p>
+
+        <h4>Search Engine</h4>
+        <p>
+            <span class="tech-badge">Elasticsearch 8.11+</span>
+        </p>
+
+        <h4>OCR & AI/ML</h4>
+        <p>
+            <span class="tech-badge">Tesseract 5.0+</span>
+            <span class="tech-badge">AWS Textract</span>
+            <span class="tech-badge">spaCy 3.7+</span>
+            <span class="tech-badge">OpenAI API</span>
+        </p>
+
+        <h4>Monitoring & Observability</h4>
+        <p>
+            <span class="tech-badge">Prometheus</span>
+            <span class="tech-badge">Grafana</span>
+            <span class="tech-badge">ELK Stack</span>
+            <span class="tech-badge">Jaeger</span>
+        </p>
+
+        <h4>Containerization & Orchestration</h4>
+        <p>
+            <span class="tech-badge">Docker</span>
+            <span class="tech-badge">Kubernetes</span>
+            <span class="tech-badge">Helm</span>
+        </p>
+
+        <h4>CI/CD</h4>
+        <p>
+            <span class="tech-badge">GitHub Actions</span>
+            <span class="tech-badge">Docker Registry</span>
+            <span class="tech-badge">ArgoCD (optional)</span>
+        </p>
+
+        <h3>5.2 API Specifications</h3>
+
+        <h4>Upload Service API</h4>
+        <table>
+            <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>/api/v1/upload</code></td>
+                <td>POST</td>
+                <td>Direct document upload</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/upload/presigned-url</code></td>
+                <td>POST</td>
+                <td>Generate presigned URL for upload</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/documents</code></td>
+                <td>GET</td>
+                <td>List uploaded documents</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/documents/{id}</code></td>
+                <td>GET</td>
+                <td>Get document details</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/documents/{id}</code></td>
+                <td>DELETE</td>
+                <td>Delete document</td>
+            </tr>
+        </table>
+
+        <h4>Processing Service API</h4>
+        <table>
+            <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>/api/v1/jobs</code></td>
+                <td>POST</td>
+                <td>Create processing job</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/jobs/{id}/status</code></td>
+                <td>GET</td>
+                <td>Get job status</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/jobs/{id}/cancel</code></td>
+                <td>POST</td>
+                <td>Cancel processing job</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/jobs/{id}/results</code></td>
+                <td>GET</td>
+                <td>Get processing results</td>
+            </tr>
+        </table>
+
+        <h4>Search Service API</h4>
+        <table>
+            <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>/api/v1/search</code></td>
+                <td>GET</td>
+                <td>Search documents</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/search/suggest</code></td>
+                <td>GET</td>
+                <td>Search suggestions</td>
+            </tr>
+            <tr>
+                <td><code>/api/v1/search/advanced</code></td>
+                <td>POST</td>
+                <td>Advanced search with filters</td>
+            </tr>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h3>5.3 Database Schema</h3>
+
+        <h4>Documents Table</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+CREATE TABLE documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    filename VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_type VARCHAR(50) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    s3_bucket VARCHAR(100) NOT NULL,
+    s3_key VARCHAR(500) NOT NULL,
+    checksum VARCHAR(64) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id),
+    upload_status VARCHAR(20) DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+        </pre>
+
+        <h4>Processing Jobs Table</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+CREATE TABLE processing_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    document_id UUID NOT NULL REFERENCES documents(id),
+    job_type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    progress INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT 5,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    error_message TEXT,
+    retry_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+        </pre>
+
+        <h4>Processing Results Table</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+CREATE TABLE processing_results (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id UUID NOT NULL REFERENCES processing_jobs(id),
+    document_id UUID NOT NULL REFERENCES documents(id),
+    extracted_text TEXT,
+    page_count INTEGER,
+    language VARCHAR(10),
+    sentiment_score DECIMAL(3,2),
+    sentiment_label VARCHAR(20),
+    entities JSONB,
+    topics JSONB,
+    key_phrases JSONB,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+        </pre>
+
+        <h3>5.4 Message Queue Structure</h3>
+
+        <h4>Queue Configuration</h4>
+        <ul>
+            <li><strong>upload.queue:</strong> New document uploads for initial processing</li>
+            <li><strong>ocr.queue:</strong> Documents pending OCR processing</li>
+            <li><strong>nlp.queue:</strong> Documents pending NLP analysis</li>
+            <li><strong>indexing.queue:</strong> Documents pending Elasticsearch indexing</li>
+            <li><strong>priority.queue:</strong> High-priority documents (bypass normal queue)</li>
+            <li><strong>dlq.queue:</strong> Failed jobs for manual review</li>
+        </ul>
+
+        <h4>Message Format</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+{
+    "job_id": "uuid",
+    "document_id": "uuid",
+    "job_type": "ocr|nlp|indexing",
+    "priority": 1-10,
+    "retry_count": 0,
+    "metadata": {
+        "user_id": "uuid",
+        "filename": "document.pdf",
+        "s3_bucket": "bucket-name",
+        "s3_key": "path/to/file"
+    },
+    "timestamp": "2026-01-15T10:00:00Z"
+}
+        </pre>
+
+        <div class="page-break"></div>
+
+        <h2>6. Deployment Architecture</h2>
+
+        <h3>6.1 Kubernetes Deployment</h3>
+
+        <h4>Namespace Organization</h4>
+        <ul>
+            <li><code>doc-processing-prod</code> - Production environment</li>
+            <li><code>doc-processing-staging</code> - Staging environment</li>
+            <li><code>doc-processing-dev</code> - Development environment</li>
+        </ul>
+
+        <h4>Resource Allocation (Production)</h4>
+        <table>
+            <tr>
+                <th>Service</th>
+                <th>Replicas</th>
+                <th>CPU Request/Limit</th>
+                <th>Memory Request/Limit</th>
+            </tr>
+            <tr>
+                <td>API Gateway</td>
+                <td>3</td>
+                <td>500m / 1000m</td>
+                <td>512Mi / 1Gi</td>
+            </tr>
+            <tr>
+                <td>Upload Service</td>
+                <td>3</td>
+                <td>500m / 1000m</td>
+                <td>512Mi / 1Gi</td>
+            </tr>
+            <tr>
+                <td>OCR Workers</td>
+                <td>5</td>
+                <td>1000m / 2000m</td>
+                <td>2Gi / 4Gi</td>
+            </tr>
+            <tr>
+                <td>NLP Workers</td>
+                <td>5</td>
+                <td>1000m / 2000m</td>
+                <td>2Gi / 4Gi</td>
+            </tr>
+            <tr>
+                <td>Search Service</td>
+                <td>3</td>
+                <td>500m / 1000m</td>
+                <td>1Gi / 2Gi</td>
+            </tr>
+            <tr>
+                <td>Elasticsearch</td>
+                <td>3</td>
+                <td>2000m / 4000m</td>
+                <td>4Gi / 8Gi</td>
+            </tr>
+            <tr>
+                <td>RabbitMQ</td>
+                <td>3</td>
+                <td>1000m / 2000m</td>
+                <td>2Gi / 4Gi</td>
+            </tr>
+            <tr>
+                <td>PostgreSQL</td>
+                <td>1 (StatefulSet)</td>
+                <td>2000m / 4000m</td>
+                <td>4Gi / 8Gi</td>
+            </tr>
+            <tr>
+                <td>Redis</td>
+                <td>1</td>
+                <td>500m / 1000m</td>
+                <td>1Gi / 2Gi</td>
+            </tr>
+        </table>
+
+        <h3>6.2 High Availability Setup</h3>
+        <ul>
+            <li>Multi-zone deployment (minimum 3 availability zones)</li>
+            <li>Database replication with automatic failover</li>
+            <li>Message queue clustering with mirrored queues</li>
+            <li>Elasticsearch cluster with replica shards</li>
+            <li>S3/MinIO cross-region replication</li>
+        </ul>
+
+        <h3>6.3 Network Configuration</h3>
+        <ul>
+            <li>Ingress controller (NGINX) for external traffic</li>
+            <li>Service mesh (Istio) for internal service communication</li>
+            <li>Network policies for service isolation</li>
+            <li>TLS termination at ingress level</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>7. CI/CD Pipeline</h2>
+
+        <h3>7.1 GitHub Actions Workflow</h3>
+        <ul>
+            <li><strong>Build Stage:</strong> Docker image build and tag</li>
+            <li><strong>Test Stage:</strong> Unit tests, integration tests, security scanning</li>
+            <li><strong>Push Stage:</strong> Push to container registry</li>
+            <li><strong>Deploy Stage:</strong> Deploy to Kubernetes cluster</li>
+        </ul>
+
+        <h3>7.2 Deployment Strategy</h3>
+        <ul>
+            <li>Rolling updates with zero downtime</li>
+            <li>Automated rollback on deployment failure</li>
+            <li>Blue-green deployment for major releases</li>
+            <li>Canary releases for gradual rollout</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>8. PROJECT IMPLEMENTATION PHASES</h2>
+
+        <div class="info-box">
+            <strong>Implementation Timeline:</strong> 12-16 weeks<br>
+            <strong>Team Size:</strong> 2-4 developers<br>
+            <strong>Approach:</strong> Incremental delivery with working prototypes at each phase
+        </div>
+
+        <h3>Phase 0: Project Setup & Foundation (Week 1-2)</h3>
+        <div class="architecture-note">
+            <strong>🎯 START HERE - This is your foundation</strong>
+        </div>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Set up development environment and infrastructure</li>
+            <li>Establish project structure and coding standards</li>
+            <li>Configure essential tooling and CI/CD</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Repository setup with mono-repo or multi-repo structure</td>
+                <td>🔴 Critical</td>
+                <td>2 hours</td>
+            </tr>
+            <tr>
+                <td>Docker & Docker Compose environment</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>FastAPI project structure (single service first)</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>PostgreSQL setup with migrations (Alembic)</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Redis setup for caching</td>
+                <td>🔴 Critical</td>
+                <td>2 hours</td>
+            </tr>
+            <tr>
+                <td>MinIO (local S3) setup</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Basic authentication (JWT)</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Logging configuration (structured logging)</td>
+                <td>🟡 High</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Testing framework setup (pytest)</td>
+                <td>🟡 High</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Basic GitHub Actions CI pipeline</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+        </table>
+
+        <h4>Technology Decisions</h4>
+        <ul>
+            <li>Choose: AWS S3 vs MinIO (recommend MinIO for local dev, S3 for production)</li>
+            <li>Choose: RabbitMQ vs AWS SQS (recommend RabbitMQ for full control)</li>
+            <li>Decide on mono-repo vs multi-repo approach</li>
+        </ul>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Can run entire stack locally with `docker-compose up`</li>
+            <li>✅ Basic FastAPI service responds to health check</li>
+            <li>✅ Database migrations work correctly</li>
+            <li>✅ Can authenticate and get JWT token</li>
+        </ul>
+
+        <div class="warning-box">
+            <strong>⚠️ Phase 0 Critical Path:</strong> Do NOT skip this phase. A solid foundation saves weeks of refactoring later. Focus on getting the infrastructure right before writing business logic.
+        </div>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 1: Upload Service & Storage (Week 3-4)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Build functional document upload system</li>
+            <li>Implement S3/MinIO integration</li>
+            <li>Create basic document management</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Upload API endpoint (multipart/form-data)</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>S3/MinIO integration with boto3</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Presigned URL generation for uploads</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>File validation (type, size, checksum)</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Document metadata storage in PostgreSQL</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>List/Get/Delete document endpoints</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Batch upload support</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Upload progress tracking</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Unit & integration tests</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Can upload PDF and image files via API</li>
+            <li>✅ Files stored in MinIO/S3 with proper organization</li>
+            <li>✅ Presigned URLs work for direct uploads</li>
+            <li>✅ Document metadata correctly saved to database</li>
+            <li>✅ Can retrieve and delete documents</li>
+        </ul>
+
+        <h4>Testing Checklist</h4>
+        <ul>
+            <li>Upload 1MB, 10MB, 50MB files successfully</li>
+            <li>Test file type validation (accept PDF/images, reject others)</li>
+            <li>Test invalid/corrupted files</li>
+            <li>Verify presigned URL expiration</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 2: Message Queue & Job System (Week 5-6)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Implement asynchronous processing infrastructure</li>
+            <li>Set up RabbitMQ/Celery integration</li>
+            <li>Build job tracking system</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>RabbitMQ setup and configuration</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Celery integration with FastAPI</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Queue structure (upload, ocr, nlp, indexing)</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Job creation and submission API</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Job status tracking (database schema)</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Job status API endpoints</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Retry mechanism with exponential backoff</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Dead letter queue setup</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Priority queue implementation</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>WebSocket for real-time status updates</td>
+                <td>🟢 Medium</td>
+                <td>8 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Can submit jobs to queue programmatically</li>
+            <li>✅ Celery workers consume jobs from queue</li>
+            <li>✅ Job status updates in real-time</li>
+            <li>✅ Failed jobs moved to DLQ</li>
+            <li>✅ Retry logic works correctly</li>
+        </ul>
+
+        <h4>Testing Checklist</h4>
+        <ul>
+            <li>Submit 100 jobs simultaneously and verify processing</li>
+            <li>Test job cancellation mid-processing</li>
+            <li>Simulate worker crashes and verify retry</li>
+            <li>Test priority queue ordering</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 3: OCR Service (Week 7-8)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Implement text extraction from documents</li>
+            <li>Build OCR processing worker</li>
+            <li>Store extracted text and metadata</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Tesseract installation and configuration</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>PDF to image conversion (pdf2image)</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>OCR processing function for images</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Multi-page document handling</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Language detection</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Text preprocessing and cleaning</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Processing results database schema</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>AWS Textract integration (optional)</td>
+                <td>🟢 Low</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Image preprocessing for better OCR</td>
+                <td>🟢 Medium</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>OCR quality metrics</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Can extract text from PDF documents</li>
+            <li>✅ Can extract text from image files (PNG, JPEG)</li>
+            <li>✅ Multi-page PDFs processed correctly</li>
+            <li>✅ Extracted text stored in database</li>
+            <li>✅ Processing time under 30 seconds for 10-page document</li>
+        </ul>
+
+        <h4>Testing Checklist</h4>
+        <ul>
+            <li>Test with various PDF types (scanned, digital, mixed)</li>
+            <li>Test with different image qualities</li>
+            <li>Test multi-language documents</li>
+            <li>Verify text accuracy with known documents</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 4: NLP Analysis Service (Week 9-10)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Implement AI-powered text analysis</li>
+            <li>Extract entities and sentiment</li>
+            <li>Classify and tag documents</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>spaCy installation and model download</td>
+                <td>🔴 Critical</td>
+                <td>2 hours</td>
+            </tr>
+            <tr>
+                <td>Named Entity Recognition (NER) implementation</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Sentiment analysis implementation</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Key phrase extraction</td>
+                <td>🟡 High</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Topic classification</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>OpenAI API integration (optional enhancement)</td>
+                <td>🟢 Low</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>NLP results storage schema</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Batch processing optimization</td>
+                <td>🟢 Medium</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Custom entity types configuration</td>
+                <td>🟢 Low</td>
+                <td>4 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Can extract named entities (people, orgs, locations)</li>
+            <li>✅ Sentiment analysis returns scores and labels</li>
+            <li>✅ Key phrases identified accurately</li>
+            <li>✅ Document topics assigned automatically</li>
+            <li>✅ Results stored with document reference</li>
+        </ul>
+
+        <h4>Testing Checklist</h4>
+        <ul>
+            <li>Test with news articles for entity extraction</li>
+            <li>Test with reviews for sentiment analysis</li>
+            <li>Verify accuracy on known test datasets</li>
+            <li>Test performance with long documents (10,000+ words)</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 5: Search Service with Elasticsearch (Week 11-12)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Implement full-text search capabilities</li>
+            <li>Index processed documents</li>
+            <li>Build advanced search features</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Elasticsearch setup and configuration</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Index mapping design</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Document indexing worker</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Basic search API endpoint</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Advanced search with filters</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Search result highlighting</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Pagination and sorting</td>
+                <td>🟡 High</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Fuzzy matching and typo tolerance</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Aggregations and faceted search</td>
+                <td>🟢 Medium</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Search suggestions/autocomplete</td>
+                <td>🟢 Low</td>
+                <td>4 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Documents automatically indexed after processing</li>
+            <li>✅ Search returns relevant results in under 500ms</li>
+            <li>✅ Can filter by metadata and NLP results</li>
+            <li>✅ Search highlights matching terms</li>
+            <li>✅ Handles 10,000+ documents efficiently</li>
+        </ul>
+
+        <h4>Testing Checklist</h4>
+        <ul>
+            <li>Index 1,000 documents and verify search performance</li>
+            <li>Test complex boolean queries</li>
+            <li>Test filtering combinations</li>
+            <li>Verify relevance scoring accuracy</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 6: Monitoring & Observability (Week 13-14)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Implement comprehensive monitoring</li>
+            <li>Set up metrics collection and visualization</li>
+            <li>Configure alerting</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Prometheus setup and configuration</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Grafana setup and integration</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Custom metrics in FastAPI services</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Application performance dashboards</td>
+                <td>🟡 High</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Infrastructure dashboards</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Business metrics dashboards</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Alert rules configuration</td>
+                <td>🟡 High</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>ELK stack setup (optional)</td>
+                <td>🟢 Low</td>
+                <td>8 hours</td>
+            </tr>
+            <tr>
+                <td>Distributed tracing with Jaeger</td>
+                <td>🟢 Low</td>
+                <td>6 hours</td>
+            </tr>
+        </table>
+
+        <h4>Key Dashboards to Create</h4>
+        <ul>
+            <li>API request rates and latencies</li>
+            <li>Job processing throughput and queue depth</li>
+            <li>Error rates by service</li>
+            <li>Resource utilization (CPU, memory, disk)</li>
+            <li>Database connection pool metrics</li>
+        </ul>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ All services exposing Prometheus metrics</li>
+            <li>✅ Grafana dashboards show real-time data</li>
+            <li>✅ Alerts configured for critical failures</li>
+            <li>✅ Can trace requests across services</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 7: Microservices Separation & Scaling (Week 15-16)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Refactor monolith into microservices</li>
+            <li>Implement horizontal scaling</li>
+            <li>Set up load balancing</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>Separate services into independent containers</td>
+                <td>🔴 Critical</td>
+                <td>8 hours</td>
+            </tr>
+            <tr>
+                <td>API Gateway service creation</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Service-to-service authentication</td>
+                <td>🔴 Critical</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Load balancer configuration</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Kubernetes deployment manifests</td>
+                <td>🟡 High</td>
+                <td>10 hours</td>
+            </tr>
+            <tr>
+                <td>Helm charts creation</td>
+                <td>🟢 Medium</td>
+                <td>8 hours</td>
+            </tr>
+            <tr>
+                <td>Horizontal Pod Autoscaler (HPA) setup</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Health checks and readiness probes</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Service mesh implementation (Istio)</td>
+                <td>🟢 Low</td>
+                <td>12 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Each service runs independently</li>
+            <li>✅ Can scale services individually</li>
+            <li>✅ Auto-scaling based on load works</li>
+            <li>✅ Zero-downtime deployments</li>
+            <li>✅ System handles 1000+ concurrent users</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h3>Phase 8: CI/CD & Production Hardening (Week 17-18)</h3>
+
+        <h4>Objectives</h4>
+        <ul>
+            <li>Automate deployment pipeline</li>
+            <li>Implement production best practices</li>
+            <li>Security hardening</li>
+        </ul>
+
+        <h4>Deliverables</h4>
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Estimated Time</th>
+            </tr>
+            <tr>
+                <td>GitHub Actions CI workflow</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Automated testing in CI</td>
+                <td>🔴 Critical</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Docker image security scanning</td>
+                <td>🟡 High</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>CD pipeline to Kubernetes</td>
+                <td>🔴 Critical</td>
+                <td>6 hours</td>
+            </tr>
+            <tr>
+                <td>Environment-specific configurations</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Secrets management (Vault/Sealed Secrets)</td>
+                <td>🟡 High</td>
+                <td>5 hours</td>
+            </tr>
+            <tr>
+                <td>Rate limiting implementation</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>SSL/TLS configuration</td>
+                <td>🔴 Critical</td>
+                <td>3 hours</td>
+            </tr>
+            <tr>
+                <td>Database backup automation</td>
+                <td>🟡 High</td>
+                <td>4 hours</td>
+            </tr>
+            <tr>
+                <td>Disaster recovery procedures</td>
+                <td>🟢 Medium</td>
+                <td>4 hours</td>
+            </tr>
+        </table>
+
+        <h4>Success Criteria</h4>
+        <ul>
+            <li>✅ Push to main triggers automated deployment</li>
+            <li>✅ All tests pass before deployment</li>
+            <li>✅ Secrets never in source code</li>
+            <li>✅ Automated backups running</li>
+            <li>✅ Production-grade security in place</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>9. QUICK START GUIDE</h2>
+
+        <div class="info-box">
+            <strong>🚀 For Immediate Development - Do This First</strong>
+        </div>
+
+        <h3>Week 1 Action Items (Do These NOW)</h3>
+
+        <h4>Day 1-2: Environment Setup</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px;">
+# 1. Create project directory
+mkdir doc-processing-pipeline && cd doc-processing-pipeline
+
+# 2. Initialize git repository
+git init
+git remote add origin &lt;your-repo-url&gt;
+
+# 3. Create directory structure
+mkdir -p services/{api,upload,processor,search}
+mkdir -p infrastructure/{docker,k8s}
+mkdir -p tests
+
+# 4. Create docker-compose.yml
+touch infrastructure/docker/docker-compose.yml
+
+# 5. Setup Python virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 6. Create requirements.txt
+touch requirements.txt
+        </pre>
+
+        <h4>Day 3-4: Core Infrastructure</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px;">
+# Install core dependencies
+pip install fastapi uvicorn sqlalchemy alembic \
+    psycopg2-binary redis minio boto3 pydantic \
+    python-multipart python-jose passlib
+
+# Create docker-compose.yml with:
+# - PostgreSQL
+# - Redis
+# - MinIO
+# - RabbitMQ
+
+# Start infrastructure
+docker-compose up -d
+
+# Initialize database
+alembic init alembic
+alembic revision --autogenerate -m "initial"
+alembic upgrade head
+        </pre>
+
+        <h4>Day 5-7: First Working Service</h4>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px;">
+# Create basic FastAPI app
+# File: services/api/main.py
+
+from fastapi import FastAPI
+
+app = FastAPI(title="Document Processing Pipeline")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+# Run the application
+uvicorn services.api.main:app --reload
+
+# Test: http://localhost:8000/docs
+        </pre>
+
+        <h3>Technology Stack Quick Reference</h3>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Technology</th>
+                <th>Why This Choice</th>
+            </tr>
+            <tr>
+                <td>Web Framework</td>
+                <td>FastAPI</td>
+                <td>High performance, async support, automatic API docs</td>
+            </tr>
+            <tr>
+                <td>Database</td>
+                <td>PostgreSQL</td>
+                <td>ACID compliance, JSONB support, proven reliability</td>
+            </tr>
+            <tr>
+                <td>ORM</td>
+                <td>SQLAlchemy</td>
+                <td>Mature, supports async, great documentation</td>
+            </tr>
+            <tr>
+                <td>Cache</td>
+                <td>Redis</td>
+                <td>Fast, supports multiple data structures</td>
+            </tr>
+            <tr>
+                <td>Message Queue</td>
+                <td>RabbitMQ + Celery</td>
+                <td>Reliable, feature-rich, battle-tested</td>
+            </tr>
+            <tr>
+                <td>Object Storage</td>
+                <td>MinIO (dev) / S3 (prod)</td>
+                <td>S3-compatible, self-hosted option available</td>
+            </tr>
+            <tr>
+                <td>Search</td>
+                <td>Elasticsearch</td>
+                <td>Industry standard for full-text search</td>
+            </tr>
+            <tr>
+                <td>OCR</td>
+                <td>Tesseract</td>
+                <td>Open-source, highly accurate, multi-language</td>
+            </tr>
+            <tr>
+                <td>NLP</td>
+                <td>spaCy</td>
+                <td>Fast, production-ready, extensive models</td>
+            </tr>
+        </table>
+
+        <h3>Recommended Development Approach</h3>
+        
+        <div class="architecture-note">
+            <strong>Start Simple, Scale Progressively</strong><br><br>
+            Don't try to build everything at once. Follow this principle:
+            <ol>
+                <li>Build a monolith first (all in one service)</li>
+                <li>Get core features working end-to-end</li>
+                <li>Split into microservices when complexity demands it</li>
+                <li>Add advanced features (K8s, monitoring) incrementally</li>
+            </ol>
+        </div>
+
+        <h3>Critical Success Factors</h3>
+        <ul>
+            <li><strong>Start with Docker Compose:</strong> Don't jump to Kubernetes immediately. Master Docker Compose for local development first.</li>
+            <li><strong>Write Tests Early:</strong> Test upload → OCR → NLP → Search pipeline with real documents from day one.</li>
+            <li><strong>Monitor from the Start:</strong> Add basic logging and metrics in Phase 0, not as an afterthought.</li>
+            <li><strong>Use Real Documents:</strong> Test with actual PDFs and images, not just mock data.</li>
+            <li><strong>Version Control Everything:</strong> Infrastructure as code, configs, scripts - all in Git.</li>
+        </ul>
+
+        <h3>Common Pitfalls to Avoid</h3>
+        <div class="warning-box">
+            <strong>⚠️ Don't Make These Mistakes:</strong>
+            <ul>
+                <li>❌ Starting with Kubernetes before mastering Docker</li>
+                <li>❌ Building all microservices simultaneously</li>
+                <li>❌ Skipping authentication/authorization</li>
+                <li>❌ Hardcoding credentials in source code</li>
+                <li>❌ No error handling or retry logic</li>
+                <li>❌ Ignoring database indexes and query optimization</li>
+                <li>❌ Not testing with realistic document sizes</li>
+            </ul>
+        </div>
+
+        <div class="page-break"></div>
+
+        <h2>10. Success Metrics & KPIs</h2>
+
+        <h3>Technical Metrics</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Target</th>
+                <th>Excellent</th>
+            </tr>
+            <tr>
+                <td>API Response Time (p95)</td>
+                <td>&lt; 200ms</td>
+                <td>&lt; 100ms</td>
+            </tr>
+            <tr>
+                <td>OCR Processing Time</td>
+                <td>&lt; 30s/page</td>
+                <td>&lt; 15s/page</td>
+            </tr>
+            <tr>
+                <td>Search Query Latency</td>
+                <td>&lt; 500ms</td>
+                <td>&lt; 200ms</td>
+            </tr>
+            <tr>
+                <td>System Uptime</td>
+                <td>99.9%</td>
+                <td>99.99%</td>
+            </tr>
+            <tr>
+                <td>Test Coverage</td>
+                <td>&gt; 80%</td>
+                <td>&gt; 90%</td>
+            </tr>
+        </table>
+
+        <h3>Business Metrics</h3>
+        <ul>
+            <li>Documents processed per day</li>
+            <li>Average processing time per document</li>
+            <li>Search accuracy (relevant results in top 10)</li>
+            <li>User adoption rate</li>
+            <li>Cost per document processed</li>
+        </ul>
+
+        <h2>11. Resource Requirements</h2>
+
+        <h3>Development Team</h3>
+        <ul>
+            <li><strong>Minimum:</strong> 2 backend engineers</li>
+            <li><strong>Recommended:</strong> 2-3 backend engineers + 1 DevOps engineer</li>
+            <li><strong>Ideal:</strong> 3 backend engineers + 1 DevOps + 1 ML engineer</li>
+        </ul>
+
+        <h3>Infrastructure Costs (Monthly Estimates)</h3>
+        <table>
+            <tr>
+                <th>Environment</th>
+                <th>Compute</th>
+                <th>Storage</th>
+                <th>Other</th>
+                <th>Total</th>
+            </tr>
+            <tr>
+                <td>Development</td>
+                <td>$50</td>
+                <td>$20</td>
+                <td>$10</td>
+                <td><strong>$80</strong></td>
+            </tr>
+            <tr>
+                <td>Staging</td>
+                <td>$200</td>
+                <td>$50</td>
+                <td>$30</td>
+                <td><strong>$280</strong></td>
+            </tr>
+            <tr>
+                <td>Production (small)</td>
+                <td>$500</td>
+                <td>$150</td>
+                <td>$100</td>
+                <td><strong>$750</strong></td>
+            </tr>
+            <tr>
+                <td>Production (medium)</td>
+                <td>$1,500</td>
+                <td>$400</td>
+                <td>$300</td>
+                <td><strong>$2,200</strong></td>
+            </tr>
+        </table>
+
+        <h2>12. Risk Assessment</h2>
+
+        <table>
+            <tr>
+                <th>Risk</th>
+                <th>Probability</th>
+                <th>Impact</th>
+                <th>Mitigation</th>
+            </tr>
+            <tr>
+                <td>OCR accuracy issues</td>
+                <td>Medium</td>
+                <td>High</td>
+                <td>Use AWS Textract as fallback, image preprocessing</td>
+            </tr>
+            <tr>
+                <td>Queue bottlenecks</td>
+                <td>Medium</td>
+                <td>Medium</td>
+                <td>Implement priority queues, auto-scaling workers</td>
+            </tr>
+            <tr>
+                <td>Storage costs overrun</td>
+                <td>High</td>
+                <td>Medium</td>
+                <td>Implement lifecycle policies, compression</td>
+            </tr>
+            <tr>
+                <td>Search performance degradation</td>
+                <td>Medium</td>
+                <td>High</td>
+                <td>Proper indexing strategy, ES cluster sizing</td>
+            </tr>
+            <tr>
+                <td>Security vulnerabilities</td>
+                <td>Medium</td>
+                <td>Critical</td>
+                <td>Regular security audits, automated scanning</td>
+            </tr>
+        </table>
+
+        <h2>13. Next Steps After Completion</h2>
+
+        <h3>Phase 9: Advanced Features (Optional)</h3>
+        <ul>
+            <li>Custom ML model training for document classification</li>
+            <li>Multi-tenant support</li>
+            <li>Real-time collaboration features</li>
+            <li>Advanced analytics dashboard</li>
+            <li>Mobile app integration</li>
+            <li>Webhook notifications</li>
+            <li>API rate limiting per user tier</li>
+            <li>Document version control</li>
+        </ul>
+
+        <h3>Scaling Beyond MVP</h3>
+        <ul>
+            <li>Implement caching strategies (Redis, CDN)</li>
+            <li>Database read replicas</li>
+            <li>Multi-region deployment</li>
+            <li>Advanced monitoring with APM tools</li>
+            <li>A/B testing framework</li>
+            <li>Feature flags system</li>
+        </ul>
+
+        <div class="page-break"></div>
+
+        <h2>14. Appendix</h2>
+
+        <h3>Useful Resources</h3>
+        <ul>
+            <li><strong>FastAPI Documentation:</strong> https://fastapi.tiangolo.com/</li>
+            <li><strong>Celery Documentation:</strong> https://docs.celeryq.dev/</li>
+            <li><strong>Elasticsearch Guide:</strong> https://www.elastic.co/guide/</li>
+            <li><strong>spaCy Documentation:</strong> https://spacy.io/</li>
+            <li><strong>Kubernetes Docs:</strong> https://kubernetes.io/docs/</li>
+            <li><strong>Docker Compose Docs:</strong> https://docs.docker.com/compose/</li>
+        </ul>
+
+        <h3>Sample File Structure</h3>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+doc-processing-pipeline/
+├── services/
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   ├── schemas.py
+│   │   └── routers/
+│   ├── upload/
+│   ├── processor/
+│   └── search/
+├── infrastructure/
+│   ├── docker/
+│   │   ├── docker-compose.yml
+│   │   ├── Dockerfile.api
+│   │   └── Dockerfile.worker
+│   └── k8s/
+│       ├── deployments/
+│       ├── services/
+│       └── ingress/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── monitoring/
+│   ├── prometheus/
+│   └── grafana/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── cd.yml
+├── alembic/
+├── requirements.txt
+├── .env.example
+└── README.md
+        </pre>
+
+        <h3>Environment Variables Template</h3>
+        <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/docprocessing
+DATABASE_POOL_SIZE=20
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# S3/MinIO
+S3_ENDPOINT=http://localhost:9000
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
+S3_BUCKET=documents
+
+# RabbitMQ
+RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+
+# Elasticsearch
+ELASTICSEARCH_URL=http://localhost:9200
+
+# JWT
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OpenAI (optional)
+OPENAI_API_KEY=your-api-key
+
+# AWS (if using AWS services)
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+        </pre>
+
+        <div class="info-box" style="margin-top: 40px;">
+            <h3 style="margin-top: 0;">Document Version Control</h3>
+            <table style="margin-top: 10px;">
+                <tr>
+                    <th>Version</th>
+                    <th>Date</th>
+                    <th>Changes</th>
+                    <th>Author</th>
+                </tr>
+                <tr>
+                    <td>1.0</td>
+                    <td>January 2026</td>
+                    <td>Initial release with complete implementation phases</td>
+                    <td>Engineering Team</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function downloadPDF() {
+            const element = document.querySelector('.container');
+            const opt = {
+                margin: [10, 10],
+                filename: 'Distributed_Document_Processing_Pipeline_PRD.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
