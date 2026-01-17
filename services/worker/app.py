@@ -2,8 +2,10 @@ import logging
 import colorlog
 from celery import Celery
 import os
+import fitz
 import io
 import pytesseract
+
 
 from PIL import Image
 from services.api.storage import s3_client, BUCKET_NAME
@@ -44,14 +46,26 @@ def process_document_task(doc_id: int):
         response = s3_client.get_object(Bucket = BUCKET_NAME, Key = doc.s3_key)
         #"['Body'] lets you read the file's data from S3"
         file_content = response['Body'].read()
+
+        extracted_text = ""
+        file_ext = doc.filename.split('.')[-1].lower()
         logger.info(f"successfully retrieved {len(file_content)} bytes from storage")
 
-        #converts bytes to an image
-        image = Image.open(io.BytesIO(file_content))
+        if file_ext == 'pdf' :
+            logger.info(f"extracting text from PDF: {doc.filename}")
+            #opens PDF from memory
+            with fitz.open(stream=file_content, filetype="pdf") as pdf:
+                for page in pdf:
+                    extracted_text += page.get_text()
+        
+        else:
+             #converts bytes to an image
+            image = Image.open(io.BytesIO(file_content))
 
-        #perform OCR(Optical Character Resolution)
-        logger.info(f"running OCR on {doc.filename}...")
-        extracted_text = pytesseract.image_to_string(image)
+            #perform OCR(Optical Character Resolution)
+            logger.info(f"running OCR on {doc.filename}...")
+            extracted_text = pytesseract.image_to_string(image)
+
 
         doc.content = extracted_text
         doc.status = "completed"
