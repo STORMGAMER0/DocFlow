@@ -1,10 +1,30 @@
+import uuid
+import logging
+import colorlog
+
 from fastapi import FastAPI, UploadFile, File, Depends
 from sqlalchemy.orm import Session
 from services.api import models
 from services.api.database import get_db
 
 from .storage import upload_to_minio
-import uuid
+from services.worker.app import process_document_task
+
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    log_colors={
+        'DEBUG':    'cyan',
+        'INFO':     'green',
+        'WARNING':  'yellow',
+        'ERROR':    'red',
+        'CRITICAL': 'red,bg_white',
+    }
+))
+
+logger = colorlog.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 app = FastAPI(title="DocFlow API")
@@ -39,6 +59,9 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
     db.add(new_doc)
     db.commit()
     db.refresh(new_doc)
+
+    #trigger background worker
+    process_document_task.delay(new_doc.id)
 
     return {
         "document_id" : new_doc.id,

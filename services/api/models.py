@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, Text, func
+from datetime import datetime, timezone
 from .database import Base
 
 class Document(Base):
@@ -9,4 +9,6 @@ class Document(Base):
     filename = Column(String, index=True)
     s3_key = Column(String)
     status = Column(String, default="pending")
-    upload_time = Column(DateTime, default=datetime.utcnow)
+    content = Column(Text, nullable=True)
+    upload_time = Column(DateTime(timezone=True), server_default=func.now())
+    
