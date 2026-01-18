@@ -3,7 +3,7 @@ from botocore.exceptions import NoCredentialsError
 import os
 
 #connecting to MinIO
-MINIO_URL = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+MINIO_URL = os.getenv("MINIO_ENDPOINT", "minio:9000")
 ACCESS_KEY = "minioadmin"
 SECRET_KEY = "minioadmin"
 BUCKET_NAME = "documents"

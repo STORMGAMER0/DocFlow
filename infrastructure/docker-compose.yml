@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   db:
     image: postgres:15-alpine
@@ -8,6 +9,8 @@ services:
       POSTGRES_DB: docprocessing
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
@@ -23,3 +26,39 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    command: uvicorn services.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    volumes:
+      - ..:/app
+    depends_on:
+      - db
+      - redis
+      - minio
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    command: celery -A services.worker.app worker --loglevel=info
+    env_file:
+      - ../.env
+    volumes:
+      - ..:/app
+    depends_on:
+      - redis
+      - db
+      - minio
+
+volumes:
+  postgres_data:
+  minio_data:
