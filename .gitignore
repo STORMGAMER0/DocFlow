@@ -12,4 +12,6 @@ __pycache__/
 
 # Testing/System
 .pytest_cache/
-test.pdf
+test.pdfinfrastructure/ollama_data/
+infrastructure/ollama_data/
+infrastructure/ollama_data/

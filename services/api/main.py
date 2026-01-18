@@ -173,6 +173,7 @@ def get_document_status(
         "filename": doc.filename,
         "status": doc.status, 
         "content": doc.content,
+        "metadata_results": doc.metadata_results,
         "created_at": doc.upload_time
     }
 

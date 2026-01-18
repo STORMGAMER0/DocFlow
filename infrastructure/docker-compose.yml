@@ -58,7 +58,17 @@ services:
       - redis
       - db
       - minio
+  
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ./ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    
 
 volumes:
   postgres_data:
   minio_data:
+

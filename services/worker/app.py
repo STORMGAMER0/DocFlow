@@ -5,6 +5,7 @@ import pytesseract
 from celery import Celery
 from PIL import Image
 
+from services.worker.llm_service import LLMProcessor
 from services.worker.processor_service import DocumentProcessor
 
 # Infrastructure and Models
@@ -42,10 +43,22 @@ def process_document_task(self, doc_id: int):
         processor = DocumentProcessor(extracted_text)
         metadata = processor.extract_all()
 
+        metadata["summary"] = LLMProcessor.get_summary(extracted_text)
+        
         doc.content = extracted_text
         doc.metadata_results = metadata
         doc.status = "completed"
         db.commit()
+
+                # Then try to add summary (but don't fail if it times out)
+        try:
+            summary = LLMProcessor.get_summary(extracted_text)
+            doc.metadata_results["summary"] = summary
+            db.commit()
+            logger.info("summary_generated", doc_id=doc_id)
+        except Exception as e:
+            logger.warning("summary_generation_failed", doc_id=doc_id, error=str(e))
+            # Document is still marked as completed
 
         logger.info("processing_complete", doc_id=doc_id, char_count=len(extracted_text))
 
