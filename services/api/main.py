@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from services.api import models, schemas, auth
 from services.api.database import get_db
 from services.api.logging_config import setup_logging, logger # Phase 1 Logging
+from services.api.storage import s3_client, BUCKET_NAME
 
 from .storage import upload_to_minio
 from services.worker.app import process_document_task
@@ -171,5 +172,33 @@ def get_document_status(
         "id": doc.id,
         "filename": doc.filename,
         "status": doc.status, 
+        "content": doc.content,
         "created_at": doc.upload_time
     }
+
+@app.delete("/documents/{doc_id}", status_code=204)
+def delete_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    
+    doc = db.query(models.Document).filter(
+        models.Document.id == doc_id,
+        models.Document.owner_id == current_user.id
+    ).first()
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    
+    try:
+        s3_client.delete_object(Bucket=BUCKET_NAME, Key=doc.s3_key)
+    except Exception as e:
+        logger.error("minio_delete_failed", doc_id=doc_id, error=str(e))
+        
+    db.delete(doc)
+    db.commit()
+    
+    logger.info("document_deleted", doc_id=doc_id, user_id=current_user.id)
+    return None

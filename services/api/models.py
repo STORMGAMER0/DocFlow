@@ -1,5 +1,6 @@
 from sqlalchemy import ForeignKey, Boolean, Column, Integer, String, DateTime, Text, func
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
 from .database import Base
 
@@ -13,6 +14,7 @@ class Document(Base):
     content = Column(Text, nullable=True)
     upload_time = Column(DateTime(timezone=True), server_default=func.now())
     owner_id = Column(Integer, ForeignKey("users.id"))
+    metadata_results = Column(JSONB, nullable=True)
 
 
     owner = relationship("User", back_populates="documents")

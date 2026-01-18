@@ -1,12 +1,13 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 class DocumentResponse(BaseModel):
     id: int
     filename: str
     status: str
     content: Optional[str] = None
+    metadata_results: Optional[Dict[str, Any]] = None
     upload_time: Optional[datetime] = None
 
     class Config:
