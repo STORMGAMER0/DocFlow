@@ -1,8 +1,10 @@
-from typing import List
-import uuid
 
+import uuid
+import io
+
+from typing import List
 from sqlalchemy.exc import IntegrityError
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, status
+from fastapi import FastAPI, Query, UploadFile, File, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,7 @@ from services.api.database import get_db
 from services.api.logging_config import setup_logging, logger # Phase 1 Logging
 from services.api.storage import s3_client, BUCKET_NAME
 
+from services.api.storage import s3_client, BUCKET_NAME
 from .storage import upload_to_minio
 from services.worker.app import process_document_task
 
@@ -125,6 +128,56 @@ async def upload_document(
         "message": "file uploaded and queued for processing"
     }
 
+
+@app.post("/upload-batch")
+async def upload_multiple_documents(
+    files: List[UploadFile] = File(...),
+    current_user: models.User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    results = []
+    
+    for file in files:
+       
+        file_extension = file.filename.split(".")[-1]
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+
+        logger.info("batch_upload_item_started", user_id=current_user.id, filename=file.filename)
+
+       
+        success = upload_to_minio(file.file, unique_filename)
+        
+        if not success:
+            logger.error("minio_batch_upload_failed", user_id=current_user.id, filename=file.filename)
+            results.append({"filename": file.filename, "error": "failed to save to storage"})
+            continue
+
+        
+        new_doc = models.Document(
+            filename=file.filename,
+            s3_key=unique_filename,
+            status="pending",
+            owner_id=current_user.id
+        )
+
+        db.add(new_doc)
+        db.commit()
+        db.refresh(new_doc)
+
+        process_document_task.delay(new_doc.id)
+        
+        results.append({
+            "document_id": new_doc.id, 
+            "filename": file.filename,
+            "status": "queued"
+        })
+        
+    return {
+        "message": f"Batch upload processed: {len(results)} files",
+        "user_id": current_user.id,
+        "data": results
+    }
+
 @app.get("/documents", response_model=List[schemas.DocumentResponse])
 def list_documents(
     current_user: models.User = Depends(get_current_user),
@@ -203,3 +256,19 @@ def delete_document(
     
     logger.info("document_deleted", doc_id=doc_id, user_id=current_user.id)
     return None
+
+@app.get("/documents/batch-status")
+def get_batch_status(
+    doc_ids: List[int] = Query(...), 
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    docs = db.query(models.Document).filter(
+        models.Document.id.in_(doc_ids),
+        models.Document.owner_id == current_user.id
+    ).all()
+    
+    return [
+        {"id": d.id, "filename": d.filename, "status": d.status} 
+        for d in docs
+    ]

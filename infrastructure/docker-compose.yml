@@ -49,7 +49,7 @@ services:
     build:
       context: ..
       dockerfile: infrastructure/Dockerfile
-    command: celery -A services.worker.app worker --loglevel=info
+    command: celery -A services.worker.app worker --loglevel=info --concurrency=4
     env_file:
       - ../.env
     volumes:
