@@ -12,7 +12,7 @@ from services.api import models, schemas, auth
 from services.api.database import get_db
 from services.api.logging_config import setup_logging, logger # Phase 1 Logging
 from services.api.storage import s3_client, BUCKET_NAME
-
+from services.api.elasticsearch_service import search_documents as es_search_documents, ensure_index_exists, delete_document_from_index
 from services.api.storage import s3_client, BUCKET_NAME
 from .storage import upload_to_minio
 from services.worker.app import process_document_task
@@ -38,6 +38,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 app = FastAPI(title="DocFlow API")
+ensure_index_exists()
 
 @app.get("/")
 def read_root():
@@ -206,6 +207,66 @@ def search_documents(
     logger.info("search_performed", user_id=current_user.id, query=q, results_found=len(results))
     return results
 
+@app.get("/documents/batch-status")
+def get_batch_status(
+    doc_ids: str = Query(..., description="Comma-separated document IDs (e.g., 7,8,9)"),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    try:
+        id_list = [int(id.strip()) for id in doc_ids.split(",")]
+    except ValueError:
+        raise HTTPException(status_code=422, detail="doc_ids must be comma-separated integers")
+    
+    docs = db.query(models.Document).filter(
+        models.Document.id.in_(id_list),
+        models.Document.owner_id == current_user.id
+    ).all()
+    
+    return [
+        {"id": d.id, "filename": d.filename, "status": d.status}
+        for d in docs
+    ]
+
+@app.get("/documents/advanced-search")
+def advanced_search(
+    q: str,
+    page: int = 1,
+    size: int = 10,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Advanced search using Elasticsearch with:
+    - Full-text search across filename and content
+    - Fuzzy matching for typos
+    - Relevance scoring
+    - Highlighted results
+    """
+    from_ = (page - 1) * size
+    
+    results = es_search_documents(
+        query=q,
+        owner_id=current_user.id,
+        from_=from_,
+        size=size
+    )
+    
+    logger.info(
+        "advanced_search_performed",
+        user_id=current_user.id,
+        query=q,
+        results_found=results["total"]
+    )
+    
+    return {
+        "query": q,
+        "total": results["total"],
+        "page": page,
+        "size": size,
+        "results": results["documents"]
+    }
 @app.get("/documents/{doc_id}")
 def get_document_status(
     doc_id: int, 
@@ -250,25 +311,10 @@ def delete_document(
         s3_client.delete_object(Bucket=BUCKET_NAME, Key=doc.s3_key)
     except Exception as e:
         logger.error("minio_delete_failed", doc_id=doc_id, error=str(e))
-        
+
+    delete_document_from_index(doc_id)
     db.delete(doc)
     db.commit()
     
     logger.info("document_deleted", doc_id=doc_id, user_id=current_user.id)
     return None
-
-@app.get("/documents/batch-status")
-def get_batch_status(
-    doc_ids: List[int] = Query(...), 
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
-):
-    docs = db.query(models.Document).filter(
-        models.Document.id.in_(doc_ids),
-        models.Document.owner_id == current_user.id
-    ).all()
-    
-    return [
-        {"id": d.id, "filename": d.filename, "status": d.status} 
-        for d in docs
-    ]

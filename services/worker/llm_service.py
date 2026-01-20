@@ -8,13 +8,13 @@ class LLMProcessor:
         if not text or len(text) < 20:
             return "Text too short for summary."
 
-        prompt = f"Summarize this document text in one short sentence: {text[:2000]}"
+        prompt = f"Summarize this document text in one short sentence: {text[:300]}"
         
         try:
             response = httpx.post(
                 OLLAMA_URL,
                 json={"model": "tinyllama", "prompt": prompt, "stream": False},
-                timeout=60.0
+                timeout=300.0
             )
             return response.json().get("response", "Could not generate summary.")
         except Exception as e:

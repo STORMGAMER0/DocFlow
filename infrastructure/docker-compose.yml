@@ -44,7 +44,19 @@ services:
       - db
       - redis
       - minio
+      - elasticsearch
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data  
   worker:
     build:
       context: ..
@@ -58,6 +70,7 @@ services:
       - redis
       - db
       - minio
+      - elasticsearch
   
   ollama:
     image: ollama/ollama:latest
@@ -71,4 +84,5 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  elasticsearch_data: 
 

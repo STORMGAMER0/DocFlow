@@ -9,3 +9,6 @@ def test_upload_protected(auth_header):
     
     assert response.status_code == 200
     assert "document_id" in response.json()
+
+
+ 
