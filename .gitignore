@@ -1,17 +1,113 @@
 # Virtual Environment
 venv/
 ENV/
-.env
+env/
+.venv/
+.Python
 
 # Python Cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
 
 # IDE Settings
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
-# Testing/System
+# Testing
 .pytest_cache/
-test.pdfinfrastructure/ollama_data/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+.cache
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
 infrastructure/ollama_data/
+*.pid
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest
+.pytest_cache/
+
+# Documentation
+docs/_build/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Package files
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Editor backups
+*~
+*.orig
+
+# Local configuration
+config.local.json
+secrets.json
+
+test.pdf
 infrastructure/ollama_data/
