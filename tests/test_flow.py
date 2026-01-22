@@ -37,14 +37,14 @@ def test_full_document_lifecycle(auth_header):
     doc_id = upload_res.json()["document_id"]
     print(f"\n[1] Uploaded doc_id: {doc_id}")
 
-    # 2. Poll for Completion (Max 15 seconds)
+    
     status = "pending"
     data = {}
     for i in range(15):
         status_res = httpx.get(f"{API_URL}/documents/{doc_id}", headers=auth_header)
         data = status_res.json()
         status = data.get("status")
-        print(f"Polling attempt {i+1}: status={status}")  # Debug output
+        print(f"Polling attempt {i+1}: status={status}") 
         if status in ["completed", "failed"]:
             break
         time.sleep(1)
@@ -54,13 +54,13 @@ def test_full_document_lifecycle(auth_header):
 
     # 3. Verify Content Extraction
     content = data.get("content", "")
-    print(f"[3] Extracted content: '{content}'")  # Debug output
+    print(f"[3] Extracted content: '{content}'")  
     print(f"[3] Content length: {len(content)} characters")
     
     assert "APPLE" in content, f"Expected 'APPLE' in content but got: {content}"
     print(f"[3] Verified content extraction")
 
-    # 4. Delete Document (Cleanup)
+    # 4. Delete Document 
     delete_res = httpx.delete(f"{API_URL}/documents/{doc_id}", headers=auth_header)
     assert delete_res.status_code == 204
     print(f"[4] Deleted doc_id: {doc_id}")

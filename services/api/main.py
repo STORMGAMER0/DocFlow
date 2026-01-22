@@ -4,18 +4,19 @@ import io
 
 from typing import List
 from sqlalchemy.exc import IntegrityError
-from fastapi import FastAPI, Query, UploadFile, File, Depends, HTTPException, status
+from fastapi import FastAPI, Query, UploadFile, File, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from services.api import models, schemas, auth
-from services.api.database import get_db
+from services.api.database import SessionLocal, get_db
 from services.api.logging_config import setup_logging, logger # Phase 1 Logging
 from services.api.storage import s3_client, BUCKET_NAME
 from services.api.elasticsearch_service import search_documents as es_search_documents, ensure_index_exists, delete_document_from_index
 from services.api.storage import s3_client, BUCKET_NAME
 from .storage import upload_to_minio
 from services.worker.app import process_document_task
+from .ws_manager import manager
 
 
 setup_logging()
@@ -318,3 +319,86 @@ def delete_document(
     
     logger.info("document_deleted", doc_id=doc_id, user_id=current_user.id)
     return None
+
+
+
+@app.websocket("/ws/{token}")
+async def websocket_endpoint(websocket: WebSocket, token: str):
+    """WebSocket endpoint for real-time document processing updates"""
+    db = SessionLocal()
+    user = None
+    
+    try:
+        # Authenticate
+        logger.info("websocket_connection_attempt", token_preview=token[:20])
+        
+        payload = auth.jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        username = payload.get("sub")
+        
+        if not username:
+            logger.warning("websocket_auth_failed", reason="no_username_in_token")
+            await websocket.close(code=1008)
+            return
+        
+        user = db.query(models.User).filter(models.User.username == username).first()
+        
+        if not user:
+            logger.warning("websocket_auth_failed", reason="user_not_found", username=username)
+            await websocket.close(code=1008)
+            return
+        
+        # Accept connection
+        await manager.connect(websocket, user.id)
+        logger.info("websocket_connected", user_id=user.id, username=user.username)
+        
+        # Send welcome message
+        await websocket.send_json({
+            "type": "connected",
+            "message": f"Connected as {user.username}",
+            "user_id": user.id
+        })
+        
+        try:
+            while True:
+                # Keep connection alive and handle any client messages
+                data = await websocket.receive_text()
+                logger.info("websocket_message_received", user_id=user.id, data=data)
+        except WebSocketDisconnect:
+            manager.disconnect(websocket, user.id)
+            logger.info("websocket_disconnected", user_id=user.id)
+    
+    except auth.JWTError as e:
+        logger.error("websocket_jwt_error", error=str(e))
+        try:
+            await websocket.close(code=1008)
+        except:
+            pass
+    except Exception as e:
+        logger.error("websocket_error", error=str(e), error_type=type(e).__name__)
+        try:
+            await websocket.close(code=1011)
+        except:
+            pass
+    finally:
+        db.close()
+
+@app.get("/test-ws-broadcast/{user_id}")
+def test_websocket_broadcast(user_id: int, current_user: models.User = Depends(get_current_user)):
+    """Test endpoint to manually send a WebSocket message"""
+    import asyncio
+    
+    message = {
+        "type": "test",
+        "message": "This is a test message from the API",
+        "user_id": user_id
+    }
+    
+    # Send the message
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(manager.send_personal_message(message, user_id))
+        loop.close()
+        return {"status": "message sent", "message": message}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}

@@ -15,7 +15,7 @@ s3_client = boto3.client('s3',
                          region_name = "us-east-1")
 
 def upload_to_minio(file_data, object_name):
-    #uploads a file to MinIO bucket
+    
     try:
         #checks if bucket exists and creates one if none
         try:
@@ -23,7 +23,7 @@ def upload_to_minio(file_data, object_name):
         except:
             s3_client.create_bucket(Bucket = BUCKET_NAME)
         
-        #upload the file object directly
+    
         s3_client.upload_fileobj(file_data, BUCKET_NAME, object_name)
         return True
     except Exception as e:
