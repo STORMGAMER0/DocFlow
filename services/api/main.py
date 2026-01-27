@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import FastAPI, Query, UploadFile, File, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 from services.api.elasticsearch_service import search_documents as es_search_documents, ensure_index_exists, delete_document_from_index
 from services.common import models
@@ -41,6 +42,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 app = FastAPI(title="DocFlow API")
 # ensure_index_exists()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
