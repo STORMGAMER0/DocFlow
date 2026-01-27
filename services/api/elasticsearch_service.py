@@ -1,12 +1,14 @@
 from elasticsearch import Elasticsearch
-import os
-from services.api.logging_config import logger
+from services.common.config import settings
+from services.common.logging_config import logger
 
-ES_HOST = os.getenv("ELASTICSEARCH_HOST", "elasticsearch:9200")
 
 def get_es_client():
     """Get Elasticsearch client"""
-    return Elasticsearch([f"http://{ES_HOST}"])
+    try:
+        return Elasticsearch([f"http://{settings.elasticsearch_host}"])
+    except:
+        return None
 
 def ensure_index_exists():
     """Create the documents index if it doesn't exist"""

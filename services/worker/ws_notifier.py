@@ -1,12 +1,12 @@
 import redis
 import json
 import os
-from services.api.logging_config import logger
+from services.common.config import settings
+from services.common.logging_config import logger
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 def get_redis_client():
-    return redis.from_url(REDIS_URL)
+    return redis.from_url(settings.redis_url)
 
 def send_ws_notification(user_id: int, message: dict):
     try:

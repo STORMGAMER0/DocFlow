@@ -4,7 +4,8 @@ import redis
 import asyncio
 import json
 import os
-from services.api.logging_config import logger
+from services.common.config import settings
+from services.common.logging_config import logger
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

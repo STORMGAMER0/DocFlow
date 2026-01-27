@@ -9,21 +9,20 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from services.worker.llm_service import LLMProcessor
 from services.worker.processor_service import DocumentProcessor
-from services.worker.ws_notifier import send_ws_notification
-
 
 from .ocr_service import extract_text_from_bytes
-from services.api.storage import s3_client, BUCKET_NAME
-from services.api.database import SessionLocal
-from services.api import models
-from services.api.logging_config import setup_logging, logger
+from services.common.storage import s3_client, BUCKET_NAME
+from services.common.database import SessionLocal
+from services.common import models
+from services.common.logging_config import setup_logging, logger
 from services.api.elasticsearch_service import index_document
 from services.worker.ws_notifier import send_ws_notification
+from ..common.config import settings
+
 setup_logging()
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-celery_app = Celery("worker", broker=REDIS_URL, backend=REDIS_URL)
+celery_app = Celery("worker", broker=settings.redis_url, backend=settings.redis_url)
 
 
 

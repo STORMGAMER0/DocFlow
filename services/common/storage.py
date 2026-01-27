@@ -1,18 +1,15 @@
 import boto3
 from botocore.exceptions import NoCredentialsError
-import os
+from services.common.config import settings
 
 #connecting to MinIO
-MINIO_URL = os.getenv("MINIO_ENDPOINT", "minio:9000")
-ACCESS_KEY = "minioadmin"
-SECRET_KEY = "minioadmin"
-BUCKET_NAME = "documents"
-
 s3_client = boto3.client('s3',
-                         endpoint_url = f"http://{MINIO_URL}",
-                         aws_access_key_id = ACCESS_KEY,
-                         aws_secret_access_key = SECRET_KEY,
-                         region_name = "us-east-1")
+                         endpoint_url=f"http://{settings.minio_endpoint}",
+                         aws_access_key_id=settings.minio_access_key,
+                         aws_secret_access_key=settings.minio_secret_key,
+                         region_name="us-east-1")
+
+BUCKET_NAME = settings.minio_bucket_name
 
 def upload_to_minio(file_data, object_name):
     

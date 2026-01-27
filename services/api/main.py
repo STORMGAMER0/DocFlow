@@ -8,16 +8,17 @@ from fastapi import FastAPI, Query, UploadFile, File, Depends, HTTPException, We
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from services.api import models, schemas, auth
-from services.api.database import SessionLocal, get_db
-from services.api.logging_config import setup_logging, logger # Phase 1 Logging
-from services.api.storage import s3_client, BUCKET_NAME
 from services.api.elasticsearch_service import search_documents as es_search_documents, ensure_index_exists, delete_document_from_index
-from services.api.storage import s3_client, BUCKET_NAME
-from .storage import upload_to_minio
-from services.worker.app import process_document_task
-from .ws_manager import manager
+from services.common import models
+from services.common.database import SessionLocal, get_db
+from services.common.logging_config import setup_logging, logger
+from services.common.storage import s3_client, BUCKET_NAME, upload_to_minio
 
+from services.api import schemas, auth
+from services.api.elasticsearch_service import search_documents as es_search_documents, ensure_index_exists, delete_document_from_index
+from services.api.ws_manager import manager
+
+from services.worker.app import process_document_task
 
 setup_logging()
 
@@ -39,7 +40,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 app = FastAPI(title="DocFlow API")
-ensure_index_exists()
+# ensure_index_exists()
 
 @app.get("/")
 def read_root():

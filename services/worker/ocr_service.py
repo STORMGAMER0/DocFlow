@@ -2,7 +2,7 @@ import io
 import fitz
 import pytesseract
 from PIL import Image
-from services.api.logging_config import logger
+from services.common.logging_config import logger
 
 def extract_text_from_bytes(file_content: bytes, filename: str) -> str:
     extracted_text = ""
