@@ -183,7 +183,10 @@ function Login({ setToken }) {
             {isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
-
+        
+        <div className="bg-blue-500 text-white p-4">
+  Tailwind Test
+</div>
         {/* Toggle Login/Register */}
         <div style={{
           marginTop: '1.5rem',

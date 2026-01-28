@@ -7,7 +7,7 @@ class DocumentResponse(BaseModel):
     filename: str
     status: str
     content: Optional[str] = None
-    # metadata_results: Optional[Dict[str, Any]] = None
+    metadata_results: Optional[Dict[str, Any]] = None
     upload_time: Optional[datetime] = None
 
     class Config:

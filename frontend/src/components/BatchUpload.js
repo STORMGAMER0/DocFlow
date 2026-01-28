@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { uploadDocumentBatch } from '../services/api';
 import { toast } from 'react-toastify';
+import { FiUpload, FiX, FiFile, FiCheckCircle } from 'react-icons/fi';
+import { uploadDocumentBatch } from '../services/api';
+import { colors, styles, mergeStyles } from '../styles';
 
 function BatchUpload({ onUploadComplete }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -18,34 +20,34 @@ function BatchUpload({ onUploadComplete }) {
     setSelectedFiles(files => files.filter((_, i) => i !== index));
   };
 
-const handleBatchUpload = async () => {
-  if (selectedFiles.length === 0) {
-    toast.warning('Please select files first');
-    return;
-  }
-
-  setUploading(true);
-  setUploadProgress(0);
-
-  try {
-    const response = await uploadDocumentBatch(selectedFiles, (progress) => {
-      setUploadProgress(progress);
-    });
-
-    setUploadResults(response.data);
-    toast.success(`🎉 Successfully uploaded ${selectedFiles.length} files!`);
-    setSelectedFiles([]);
-    
-    if (onUploadComplete) {
-      onUploadComplete();
+  const handleBatchUpload = async () => {
+    if (selectedFiles.length === 0) {
+      toast.warning('Please select files first');
+      return;
     }
-  } catch (error) {
-    toast.error('Batch upload failed: ' + (error.response?.data?.detail || error.message));
-  } finally {
-    setUploading(false);
+
+    setUploading(true);
     setUploadProgress(0);
-  }
-};
+
+    try {
+      const response = await uploadDocumentBatch(selectedFiles, (progress) => {
+        setUploadProgress(progress);
+      });
+
+      setUploadResults(response.data);
+      toast.success(`🎉 Successfully uploaded ${selectedFiles.length} files!`);
+      setSelectedFiles([]);
+      
+      if (onUploadComplete) {
+        onUploadComplete();
+      }
+    } catch (error) {
+      toast.error('Batch upload failed: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -55,77 +57,175 @@ const handleBatchUpload = async () => {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  return (
-    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-        📦 Batch Upload (Multiple Files)
-      </h2>
+  const getTotalSize = () => {
+    return selectedFiles.reduce((total, file) => total + file.size, 0);
+  };
 
+  return (
+    <div>
       {/* File Input */}
-      <div style={{ marginBottom: '1rem' }}>
-        <input 
-          type="file" 
-          onChange={handleFileChange}
-          accept=".pdf,.png,.jpg,.jpeg"
-          multiple
-          disabled={uploading}
-          style={{ 
-            width: '100%',
-            padding: '0.5rem', 
-            border: '2px dashed #d1d5db', 
-            borderRadius: '0.375rem',
-            cursor: uploading ? 'not-allowed' : 'pointer'
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label
+          htmlFor="batch-upload"
+          style={{
+            display: 'block',
+            padding: '3rem 2rem',
+            border: `2px dashed ${colors.gray[300]}`,
+            borderRadius: '0.75rem',
+            textAlign: 'center',
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            backgroundColor: colors.gray[50],
+            transition: 'all 0.2s ease',
           }}
-        />
-        <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
-          Select multiple PDF or image files
-        </p>
+          onMouseEnter={(e) => {
+            if (!uploading) {
+              e.target.style.borderColor = colors.primary;
+              e.target.style.backgroundColor = colors.primaryLight;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!uploading) {
+              e.target.style.borderColor = colors.gray[300];
+              e.target.style.backgroundColor = colors.gray[50];
+            }
+          }}
+        >
+          <FiUpload style={{ 
+            fontSize: '3rem', 
+            color: colors.gray[400],
+            marginBottom: '1rem',
+          }} />
+          <p style={{ 
+            fontSize: '1rem', 
+            fontWeight: '600',
+            color: colors.gray[700],
+            marginBottom: '0.5rem',
+          }}>
+            Click to select files or drag and drop
+          </p>
+          <p style={{ fontSize: '0.875rem', color: colors.gray[500] }}>
+            PDF, JPG, JPEG, PNG (Multiple files allowed)
+          </p>
+          <input
+            id="batch-upload"
+            type="file"
+            onChange={handleFileChange}
+            accept=".pdf,.png,.jpg,.jpeg"
+            multiple
+            disabled={uploading}
+            style={{ display: 'none' }}
+          />
+        </label>
       </div>
 
       {/* Selected Files List */}
       {selectedFiles.length > 0 && (
-        <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-            Selected Files ({selectedFiles.length})
-          </h3>
+        <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ 
-            maxHeight: '200px', 
-            overflowY: 'auto', 
-            border: '1px solid #e5e7eb', 
-            borderRadius: '0.375rem',
-            padding: '0.5rem'
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '1rem',
+          }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600',
+              color: colors.gray[800],
+            }}>
+              Selected Files ({selectedFiles.length})
+            </h3>
+            <div style={{
+              fontSize: '0.875rem',
+              color: colors.gray[600],
+            }}>
+              Total: {formatFileSize(getTotalSize())}
+            </div>
+          </div>
+          
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            border: `1px solid ${colors.gray[200]}`,
+            borderRadius: '0.5rem',
+            backgroundColor: colors.white,
           }}>
             {selectedFiles.map((file, index) => (
-              <div 
+              <div
                 key={index}
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.5rem',
-                  borderBottom: index < selectedFiles.length - 1 ? '1px solid #f3f4f6' : 'none'
+                  padding: '1rem',
+                  borderBottom: index < selectedFiles.length - 1 ? `1px solid ${colors.gray[100]}` : 'none',
+                  transition: 'background-color 0.2s ease',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.gray[50]}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{file.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    {formatFileSize(file.size)}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: 0 }}>
+                  {/* File Icon */}
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '0.5rem',
+                    backgroundColor: colors.primaryLight,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <FiFile style={{ fontSize: '1.25rem', color: colors.primary }} />
+                  </div>
+
+                  {/* File Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      fontWeight: '500',
+                      color: colors.gray[800],
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {file.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.75rem', 
+                      color: colors.gray[500],
+                      marginTop: '0.25rem',
+                    }}>
+                      {formatFileSize(file.size)}
+                    </div>
                   </div>
                 </div>
+
+                {/* Remove Button */}
                 {!uploading && (
-                  <button 
+                  <button
                     onClick={() => handleRemoveFile(index)}
-                    style={{ 
-                      padding: '0.25rem 0.5rem', 
-                      backgroundColor: '#fee2e2', 
-                      color: '#991b1b',
-                      borderRadius: '0.25rem', 
-                      border: 'none', 
+                    style={{
+                      padding: '0.5rem',
+                      backgroundColor: 'transparent',
+                      color: colors.gray[400],
+                      borderRadius: '0.375rem',
+                      border: 'none',
                       cursor: 'pointer',
-                      fontSize: '0.75rem'
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = colors.dangerLight;
+                      e.target.style.color = colors.danger;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'transparent';
+                      e.target.style.color = colors.gray[400];
                     }}
                   >
-                    Remove
+                    <FiX style={{ fontSize: '1.25rem' }} />
                   </button>
                 )}
               </div>
@@ -136,70 +236,141 @@ const handleBatchUpload = async () => {
 
       {/* Upload Progress */}
       {uploading && (
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Uploading...</span>
-            <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>{uploadProgress}%</span>
-          </div>
+        <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ 
-            width: '100%', 
-            height: '8px', 
-            backgroundColor: '#e5e7eb', 
-            borderRadius: '9999px',
-            overflow: 'hidden'
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            marginBottom: '0.75rem',
           }}>
-            <div style={{ 
-              width: `${uploadProgress}%`, 
-              height: '100%', 
-              backgroundColor: '#3b82f6',
-              transition: 'width 0.3s'
+            <span style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: '600',
+              color: colors.gray[700],
+            }}>
+              Uploading {selectedFiles.length} files...
+            </span>
+            <span style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: '600',
+              color: colors.primary,
+            }}>
+              {uploadProgress}%
+            </span>
+          </div>
+          <div style={{
+            width: '100%',
+            height: '12px',
+            backgroundColor: colors.gray[200],
+            borderRadius: '9999px',
+            overflow: 'hidden',
+            boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
+          }}>
+            <div style={{
+              width: `${uploadProgress}%`,
+              height: '100%',
+              background: `linear-gradient(90deg, ${colors.primary} 0%, ${colors.info} 100%)`,
+              transition: 'width 0.3s ease',
+              borderRadius: '9999px',
             }} />
           </div>
         </div>
       )}
 
       {/* Upload Button */}
-      <button 
+      <button
         onClick={handleBatchUpload}
         disabled={uploading || selectedFiles.length === 0}
-        style={{ 
-          width: '100%',
-          padding: '0.75rem', 
-          backgroundColor: uploading ? '#9ca3af' : selectedFiles.length === 0 ? '#d1d5db' : '#3b82f6', 
-          color: 'white', 
-          borderRadius: '0.375rem', 
-          border: 'none', 
-          cursor: uploading || selectedFiles.length === 0 ? 'not-allowed' : 'pointer',
-          fontWeight: 'bold',
-          fontSize: '1rem'
+        style={mergeStyles(
+          styles.button.base,
+          styles.button.primary,
+          { width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '1rem' },
+          (uploading || selectedFiles.length === 0) ? styles.button.disabled : {}
+        )}
+        onMouseEnter={(e) => {
+          if (!uploading && selectedFiles.length > 0) {
+            Object.assign(e.target.style, styles.button.primaryHover);
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!uploading && selectedFiles.length > 0) {
+            e.target.style.backgroundColor = colors.primary;
+            e.target.style.transform = 'none';
+            e.target.style.boxShadow = 'none';
+          }
         }}
       >
-        {uploading 
-          ? `Uploading ${selectedFiles.length} files... (${uploadProgress}%)`
+        <FiUpload />
+        {uploading
+          ? `Uploading... (${uploadProgress}%)`
           : `Upload ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''}`
         }
       </button>
 
       {/* Upload Results */}
       {uploadResults && (
-        <div style={{ 
-          marginTop: '1rem', 
-          padding: '1rem', 
-          backgroundColor: '#f0fdf4', 
-          border: '1px solid #86efac',
-          borderRadius: '0.375rem' 
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1.25rem',
+          backgroundColor: colors.successLight,
+          border: `1px solid ${colors.success}`,
+          borderRadius: '0.75rem',
         }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#166534', marginBottom: '0.5rem' }}>
-            ✅ Upload Complete
-          </h3>
-          <p style={{ fontSize: '0.875rem', color: '#15803d' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.75rem',
+            marginBottom: '1rem',
+          }}>
+            <FiCheckCircle style={{ fontSize: '1.5rem', color: colors.success }} />
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: '600', 
+              color: '#065f46',
+            }}>
+              Upload Complete!
+            </h3>
+          </div>
+          <p style={{ 
+            fontSize: '0.875rem', 
+            color: '#15803d',
+            marginBottom: '0.75rem',
+          }}>
             {uploadResults.message}
           </p>
-          {uploadResults.data && (
-            <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#15803d' }}>
+          {uploadResults.data && uploadResults.data.length > 0 && (
+            <div style={{ 
+              marginTop: '0.75rem',
+              padding: '0.75rem',
+              backgroundColor: colors.white,
+              borderRadius: '0.5rem',
+            }}>
               {uploadResults.data.map((item, idx) => (
-                <div key={idx}>
-                  • {item.filename} - {item.status}
+                <div
+                  key={idx}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#15803d',
+                    padding: '0.25rem 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div style={{
+                    width: '4px',
+                    height: '4px',
+                    borderRadius: '50%',
+                    backgroundColor: colors.success,
+                  }} />
+                  <span style={{ fontWeight: '500' }}>{item.filename}</span>
+                  <span>-</span>
+                  <span style={{ 
+                    ...styles.badge.base,
+                    ...styles.badge.success,
+                    padding: '0.125rem 0.5rem',
+                  }}>
+                    {item.status}
+                  </span>
                 </div>
               ))}
             </div>

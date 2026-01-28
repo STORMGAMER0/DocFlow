@@ -12,7 +12,7 @@ class Document(Base):
     s3_key = Column(String)
     status = Column(String, default="pending")
     content = Column(Text, nullable=True)
-    upload_time = Column(DateTime(timezone=True), server_default=func.now())
+    upload_time = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     metadata_results = Column(JSONB, nullable=True)
 

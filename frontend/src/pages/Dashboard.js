@@ -11,6 +11,12 @@ import {
   FiSearch,
   FiPackage,
   FiFile,
+  FiCheckSquare,
+  FiSquare,
+  FiTrash2,
+  FiArrowUp,
+  FiArrowDown,
+  FiX,
 } from "react-icons/fi";
 import { colors, styles, mergeStyles } from "../styles";
 
@@ -22,6 +28,8 @@ function Dashboard({ token, setToken }) {
   const navigate = useNavigate();
   const { messages, isConnected } = useWebSocket(token);
   const [uploadMode, setUploadMode] = useState("single");
+  const [selectedDocIds, setSelectedDocIds] = useState([]);
+  const [sortOrder, setSortOrder] = useState("desc"); // 'asc' or 'desc'
 
   // Fetch documents on load
   useEffect(() => {
@@ -165,15 +173,30 @@ function Dashboard({ token, setToken }) {
       return;
     }
 
+    // Optimistic update - remove from UI immediately
+    const previousDocuments = [...documents];
+    const previousSearchResults = searchResults ? [...searchResults] : null;
+
+    // Update UI immediately
+    setDocuments((docs) => docs.filter((doc) => doc.id !== docId));
+    if (searchResults) {
+      setSearchResults((results) => results.filter((doc) => doc.id !== docId));
+    }
+
+    // Show optimistic toast
+    toast.info("🗑️ Deleting document...", { autoClose: 1000 });
+
     try {
+      // Delete in background
       await deleteDocument(docId);
-      toast.success("🗑️ Document deleted");
-      fetchDocuments();
-      if (searchResults) {
-        setSearchResults(searchResults.filter((doc) => doc.id !== docId));
-      }
+      toast.success("✅ Document deleted successfully");
     } catch (error) {
-      toast.error("Delete failed: " + error.message);
+      // Rollback on error
+      setDocuments(previousDocuments);
+      if (previousSearchResults) {
+        setSearchResults(previousSearchResults);
+      }
+      toast.error("❌ Delete failed: " + error.message);
     }
   };
 
@@ -197,7 +220,111 @@ function Dashboard({ token, setToken }) {
 
   // Show search results if available, otherwise show all documents
   const displayDocuments = searchResults !== null ? searchResults : documents;
+  // Toggle document selection
+const toggleDocumentSelection = (docId, e) => {
+  e.stopPropagation();
+  setSelectedDocIds(prev => 
+    prev.includes(docId) 
+      ? prev.filter(id => id !== docId)
+      : [...prev, docId]
+  );
+};
 
+// Select all documents
+const toggleSelectAll = () => {
+  if (selectedDocIds.length === displayDocuments.length) {
+    setSelectedDocIds([]);
+  } else {
+    setSelectedDocIds(displayDocuments.map(doc => doc.id));
+  }
+};
+
+// Delete multiple documents
+const handleBulkDelete = async () => {
+  if (selectedDocIds.length === 0) {
+    toast.warning('No documents selected');
+    return;
+  }
+
+  if (!window.confirm(`Delete ${selectedDocIds.length} document(s)?`)) {
+    return;
+  }
+
+  // Optimistic update
+  const previousDocuments = [...documents];
+  const previousSearchResults = searchResults ? [...searchResults] : null;
+  
+  setDocuments(docs => docs.filter(doc => !selectedDocIds.includes(doc.id)));
+  if (searchResults) {
+    setSearchResults(results => results.filter(doc => !selectedDocIds.includes(doc.id)));
+  }
+  
+  toast.info(`🗑️ Deleting ${selectedDocIds.length} document(s)...`, { autoClose: 1000 });
+
+  // Delete all in parallel
+  const deletePromises = selectedDocIds.map(id => deleteDocument(id));
+  
+  try {
+    await Promise.all(deletePromises);
+    toast.success(`✅ ${selectedDocIds.length} document(s) deleted successfully`);
+    setSelectedDocIds([]);
+    fetchDocuments(); // Refresh to be sure
+  } catch (error) {
+    // Rollback on error
+    setDocuments(previousDocuments);
+    if (previousSearchResults) {
+      setSearchResults(previousSearchResults);
+    }
+    toast.error('❌ Some deletes failed: ' + error.message);
+    setSelectedDocIds([]);
+  }
+};
+
+// Sort documents
+const toggleSortOrder = () => {
+  setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+};
+
+// Apply sorting to displayed documents
+const sortedDocuments = [...displayDocuments].sort((a, b) => {
+  const dateA = new Date(a.upload_time || 0);
+  const dateB = new Date(b.upload_time || 0);
+  return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+});
+
+// Handle paste from clipboard
+const handlePaste = (e) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const file = items[i].getAsFile();
+      if (file) {
+        setSelectedFile(file);
+        toast.success(`📋 Pasted: ${file.name}`);
+        return;
+      }
+    }
+  }
+};
+
+// Handle drag and drop
+const handleDragOver = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+
+const handleDrop = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0) {
+    setSelectedFile(files[0]);
+    toast.success(`📁 Dropped: ${files[0].name}`);
+  }
+};
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6" }}>
       {/* Header */}
@@ -418,88 +545,169 @@ function Dashboard({ token, setToken }) {
           </div>
 
           {/* Single Upload */}
-          {uploadMode === "single" && (
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <FiUpload
-                  style={{ fontSize: "1.5rem", color: colors.primary }}
-                />
-                <h2
-                  style={{
-                    fontSize: "1.25rem",
-                    fontWeight: "bold",
-                    color: colors.gray[800],
-                  }}
-                >
-                  Upload Document
-                </h2>
-              </div>
-              <div
-                style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-              >
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  style={{
-                    ...styles.input.base,
-                    flex: 1,
-                  }}
-                />
-                <button
-                  onClick={handleUpload}
-                  disabled={uploading || !selectedFile}
-                  style={mergeStyles(
-                    styles.button.base,
-                    styles.button.primary,
-                    uploading || !selectedFile ? styles.button.disabled : {},
-                  )}
-                  onMouseEnter={(e) => {
-                    if (!uploading && selectedFile) {
-                      Object.assign(e.target.style, styles.button.primaryHover);
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!uploading && selectedFile) {
-                      e.target.style.backgroundColor = colors.primary;
-                      e.target.style.transform = "none";
-                      e.target.style.boxShadow = "none";
-                    }
-                  }}
-                >
-                  <FiUpload />
-                  {uploading ? "Uploading..." : "Upload"}
-                </button>
-              </div>
-              {selectedFile && (
-                <div
-                  style={{
-                    marginTop: "0.75rem",
-                    padding: "0.75rem 1rem",
-                    backgroundColor: colors.gray[50],
-                    borderRadius: "0.5rem",
-                    fontSize: "0.875rem",
-                    color: colors.gray[700],
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <FiFile style={{ color: colors.primary }} />
-                  <span style={{ fontWeight: "500" }}>Selected:</span>{" "}
-                  {selectedFile.name}
-                </div>
-              )}
-            </div>
-          )}
+{uploadMode === "single" && (
+  <div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        marginBottom: "1rem",
+      }}
+    >
+      <FiUpload
+        style={{ fontSize: "1.5rem", color: colors.primary }}
+      />
+      <h2
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: "bold",
+          color: colors.gray[800],
+        }}
+      >
+        Upload Document
+      </h2>
+    </div>
 
+    {/* Drag & Drop + Paste Area */}
+    <div
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onPaste={handlePaste}
+      tabIndex={0}
+      style={{
+        border: `2px dashed ${colors.gray[300]}`,
+        borderRadius: "0.75rem",
+        padding: "2rem",
+        marginBottom: "1rem",
+        textAlign: "center",
+        backgroundColor: colors.gray[50],
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        outline: "none",
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.borderColor = colors.primary;
+        e.target.style.backgroundColor = colors.primaryLight;
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.borderColor = colors.gray[300];
+        e.target.style.backgroundColor = colors.gray[50];
+      }}
+      onFocus={(e) => {
+        e.target.style.borderColor = colors.primary;
+        e.target.style.backgroundColor = colors.primaryLight;
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = colors.gray[300];
+        e.target.style.backgroundColor = colors.gray[50];
+      }}
+      onClick={() => document.getElementById('single-file-input').click()}
+    >
+      <FiUpload style={{ 
+        fontSize: '3rem', 
+        color: colors.gray[400],
+        marginBottom: '1rem',
+      }} />
+      <p style={{
+        fontSize: '1rem',
+        fontWeight: '600',
+        color: colors.gray[700],
+        marginBottom: '0.5rem',
+      }}>
+        Click, drag & drop, or paste (Ctrl+V)
+      </p>
+      <p style={{ fontSize: '0.875rem', color: colors.gray[500] }}>
+        PDF, JPG, JPEG, PNG
+      </p>
+      <p style={{ 
+        fontSize: '0.75rem', 
+        color: colors.gray[400],
+        marginTop: '0.5rem',
+        fontStyle: 'italic',
+      }}>
+        💡 Tip: Copy an image and press Ctrl+V here
+      </p>
+    </div>
+
+    {/* Hidden file input */}
+    <input
+      id="single-file-input"
+      type="file"
+      onChange={handleFileChange}
+      accept=".pdf,.png,.jpg,.jpeg"
+      style={{ display: 'none' }}
+    />
+
+    {/* Selected file preview */}
+    {selectedFile && (
+      <div
+        style={{
+          marginBottom: '1rem',
+          padding: "0.75rem 1rem",
+          backgroundColor: colors.gray[50],
+          borderRadius: "0.5rem",
+          fontSize: "0.875rem",
+          color: colors.gray[700],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: 'space-between',
+          gap: "0.5rem",
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FiFile style={{ color: colors.primary }} />
+          <span style={{ fontWeight: "500" }}>Selected:</span>{" "}
+          {selectedFile.name}
+          <span style={{ color: colors.gray[500], fontSize: '0.75rem' }}>
+            ({(selectedFile.size / 1024).toFixed(1)} KB)
+          </span>
+        </div>
+        <button
+          onClick={() => setSelectedFile(null)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: colors.danger,
+            cursor: 'pointer',
+            padding: '0.25rem',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <FiX style={{ fontSize: '1.25rem' }} />
+        </button>
+      </div>
+    )}
+
+    {/* Upload button */}
+    <button
+      onClick={handleUpload}
+      disabled={uploading || !selectedFile}
+      style={mergeStyles(
+        styles.button.base,
+        styles.button.primary,
+        { width: '100%', justifyContent: 'center', padding: '0.875rem' },
+        uploading || !selectedFile ? styles.button.disabled : {},
+      )}
+      onMouseEnter={(e) => {
+        if (!uploading && selectedFile) {
+          Object.assign(e.target.style, styles.button.primaryHover);
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!uploading && selectedFile) {
+          e.target.style.backgroundColor = colors.primary;
+          e.target.style.transform = "none";
+          e.target.style.boxShadow = "none";
+        }
+      }}
+    >
+      <FiUpload />
+      {uploading ? "Uploading..." : "Upload Document"}
+    </button>
+  </div>
+)}
           {/* Batch Upload */}
           {uploadMode === "batch" && (
             <BatchUpload onUploadComplete={fetchDocuments} />
@@ -507,12 +715,15 @@ function Dashboard({ token, setToken }) {
         </div>
         {/* Documents List */}
         <div style={styles.card.base}>
+          {/* Header with controls */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               marginBottom: "1.5rem",
+              flexWrap: "wrap",
+              gap: "1rem",
             }}
           >
             <div
@@ -528,19 +739,146 @@ function Dashboard({ token, setToken }) {
               >
                 {searchResults !== null ? "Search Results" : "Your Documents"}
               </h2>
+              <div
+                style={{
+                  ...styles.badge.base,
+                  ...styles.badge.info,
+                  fontSize: "0.875rem",
+                  padding: "0.5rem 1rem",
+                }}
+              >
+                {displayDocuments.length} document
+                {displayDocuments.length !== 1 ? "s" : ""}
+              </div>
             </div>
+
+            {/* Action buttons */}
             <div
-              style={{
-                ...styles.badge.base,
-                ...styles.badge.info,
-                fontSize: "0.875rem",
-                padding: "0.5rem 1rem",
-              }}
+              style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}
             >
-              {displayDocuments.length} document
-              {displayDocuments.length !== 1 ? "s" : ""}
+              {/* Sort button */}
+              <button
+                onClick={toggleSortOrder}
+                style={mergeStyles(
+                  styles.button.base,
+                  styles.button.secondary,
+                  { padding: "0.5rem 1rem" },
+                )}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = colors.gray[600];
+                  e.target.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = colors.gray[500];
+                  e.target.style.transform = "none";
+                }}
+              >
+                {sortOrder === "desc" ? <FiArrowDown /> : <FiArrowUp />}
+                {sortOrder === "desc" ? "Newest First" : "Oldest First"}
+              </button>
+
+              {/* Select all button */}
+              {displayDocuments.length > 0 && (
+                <button
+                  onClick={toggleSelectAll}
+                  style={mergeStyles(
+                    styles.button.base,
+                    selectedDocIds.length > 0
+                      ? styles.button.primary
+                      : styles.button.secondary,
+                    { padding: "0.5rem 1rem" },
+                  )}
+                  onMouseEnter={(e) => {
+                    if (selectedDocIds.length === 0) {
+                      e.target.style.backgroundColor = colors.gray[600];
+                    } else {
+                      Object.assign(e.target.style, styles.button.primaryHover);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedDocIds.length === 0) {
+                      e.target.style.backgroundColor = colors.gray[500];
+                      e.target.style.transform = "none";
+                    } else {
+                      e.target.style.backgroundColor = colors.primary;
+                      e.target.style.transform = "none";
+                      e.target.style.boxShadow = "none";
+                    }
+                  }}
+                >
+                  {selectedDocIds.length === displayDocuments.length ? (
+                    <FiCheckSquare />
+                  ) : (
+                    <FiSquare />
+                  )}
+                  {selectedDocIds.length === displayDocuments.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+              )}
+
+              {/* Bulk delete button */}
+              {selectedDocIds.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  style={mergeStyles(styles.button.base, styles.button.danger, {
+                    padding: "0.5rem 1rem",
+                  })}
+                  onMouseEnter={(e) =>
+                    Object.assign(e.target.style, styles.button.dangerHover)
+                  }
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = colors.danger;
+                    e.target.style.transform = "none";
+                    e.target.style.boxShadow = "none";
+                  }}
+                >
+                  <FiTrash2 />
+                  Delete {selectedDocIds.length}
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Selection banner */}
+          {selectedDocIds.length > 0 && (
+            <div
+              style={{
+                padding: "1rem",
+                backgroundColor: colors.primaryLight,
+                borderRadius: "0.5rem",
+                marginBottom: "1rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  color: colors.primary,
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                }}
+              >
+                {selectedDocIds.length} document
+                {selectedDocIds.length !== 1 ? "s" : ""} selected
+              </span>
+              <button
+                onClick={() => setSelectedDocIds([])}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: colors.primary,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                }}
+              >
+                Clear selection
+              </button>
+            </div>
+          )}
 
           {displayDocuments.length === 0 ? (
             <div
@@ -574,7 +912,7 @@ function Dashboard({ token, setToken }) {
             </div>
           ) : (
             <div style={{ display: "grid", gap: "1rem" }}>
-              {displayDocuments.map((doc) => (
+              {sortedDocuments.map((doc) => (
                 <div
                   key={doc.id}
                   onClick={() => navigate(`/document/${doc.id}`)}
@@ -585,17 +923,26 @@ function Dashboard({ token, setToken }) {
                     justifyContent: "space-between",
                     alignItems: "center",
                     cursor: "pointer",
-                    border: `1px solid ${colors.gray[200]}`,
+                    border: selectedDocIds.includes(doc.id)
+                      ? `2px solid ${colors.primary}`
+                      : `1px solid ${colors.gray[200]}`,
+                    backgroundColor: selectedDocIds.includes(doc.id)
+                      ? colors.primaryLight
+                      : colors.white,
                   }}
                   onMouseEnter={(e) => {
-                    Object.assign(e.currentTarget.style, styles.card.hover);
-                    e.currentTarget.style.borderColor = colors.primary;
+                    if (!selectedDocIds.includes(doc.id)) {
+                      Object.assign(e.currentTarget.style, styles.card.hover);
+                      e.currentTarget.style.borderColor = colors.primary;
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow =
-                      styles.card.base.boxShadow;
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.borderColor = colors.gray[200];
+                    if (!selectedDocIds.includes(doc.id)) {
+                      e.currentTarget.style.boxShadow =
+                        styles.card.base.boxShadow;
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.borderColor = colors.gray[200];
+                    }
                   }}
                 >
                   <div
@@ -606,6 +953,52 @@ function Dashboard({ token, setToken }) {
                       alignItems: "center",
                     }}
                   >
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => toggleDocumentSelection(doc.id, e)}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "0.5rem",
+                        border: `2px solid ${selectedDocIds.includes(doc.id) ? colors.primary : colors.gray[300]}`,
+                        backgroundColor: selectedDocIds.includes(doc.id)
+                          ? colors.primary
+                          : colors.white,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        flexShrink: 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.stopPropagation();
+                        if (!selectedDocIds.includes(doc.id)) {
+                          e.target.style.borderColor = colors.primary;
+                          e.target.style.backgroundColor = colors.primaryLight;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selectedDocIds.includes(doc.id)) {
+                          e.target.style.borderColor = colors.gray[300];
+                          e.target.style.backgroundColor = colors.white;
+                        }
+                      }}
+                    >
+                      {selectedDocIds.includes(doc.id) ? (
+                        <FiCheckSquare
+                          style={{ fontSize: "1.25rem", color: colors.white }}
+                        />
+                      ) : (
+                        <FiSquare
+                          style={{
+                            fontSize: "1.25rem",
+                            color: colors.gray[400],
+                          }}
+                        />
+                      )}
+                    </button>
+
                     {/* Document Icon */}
                     <div
                       style={{
@@ -668,6 +1061,18 @@ function Dashboard({ token, setToken }) {
                         >
                           {doc.status.replace("_", " ")}
                         </span>
+                        {doc.upload_time && (
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                            }}
+                          >
+                            <strong>Uploaded:</strong>{" "}
+                            {new Date(doc.upload_time).toLocaleString()}
+                          </span>
+                        )}
                       </div>
                       {doc.content && (
                         <p
