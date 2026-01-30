@@ -137,6 +137,25 @@ export const styles = {
       color: '#991b1b',
     },
   },
+
+  
+};
+
+// Responsive breakpoints
+export const breakpoints = {
+  mobile: '480px',
+  tablet: '768px',
+  desktop: '1024px',
+};
+
+// Responsive container
+export const responsiveContainer = {
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '1rem',
+  '@media (min-width: 768px)': {
+    padding: '2rem',
+  },
 };
 
 // Helper to merge styles

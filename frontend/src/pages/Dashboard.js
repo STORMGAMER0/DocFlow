@@ -30,6 +30,7 @@ function Dashboard({ token, setToken }) {
   const [uploadMode, setUploadMode] = useState("single");
   const [selectedDocIds, setSelectedDocIds] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc"); // 'asc' or 'desc'
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Fetch documents on load
   useEffect(() => {
@@ -45,6 +46,13 @@ function Dashboard({ token, setToken }) {
       }
     }
   }, [messages]);
+
+  // Add this with your other useEffect hooks
+useEffect(() => {
+  const handleResize = () => setWindowWidth(window.innerWidth); 
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
 
   // Update documents when WebSocket message arrives and show toasts
   useEffect(() => {
@@ -325,6 +333,7 @@ const handleDrop = (e) => {
     toast.success(`📁 Dropped: ${files[0].name}`);
   }
 };
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6" }}>
       {/* Header */}
@@ -338,16 +347,16 @@ const handleDrop = (e) => {
           zIndex: 10,
         }}
       >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            padding: "1rem 2rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <div style={{
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '1rem',  // Reduced from 2rem
+  display: 'flex',
+  flexDirection: windowWidth < 768 ? 'column' : 'row',  // Stack on mobile
+  justifyContent: 'space-between',
+  alignItems: windowWidth < 768 ? 'stretch' : 'center',
+  gap: '1rem',
+}}>
           <div
             style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
           >
@@ -418,7 +427,14 @@ const handleDrop = (e) => {
         </div>
       </div>
       {/* Main Content */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
+<div style={{ 
+  maxWidth: '1200px', 
+  margin: '0 auto', 
+  padding: windowWidth < 768 ? '1rem' : '2rem',  // Changed
+  width: '100%',           // ADD THIS
+  boxSizing: 'border-box', // ADD THIS
+  overflow: 'hidden',
+}}>
         {/* Search Section */}
         <div
           style={{
@@ -753,9 +769,13 @@ const handleDrop = (e) => {
             </div>
 
             {/* Action buttons */}
-            <div
-              style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}
-            >
+            <div style={{ 
+  display: 'flex', 
+  gap: '0.5rem',  // Reduced from 0.75rem
+  alignItems: 'center',
+  flexWrap: 'wrap',  // Allow wrapping
+  justifyContent: windowWidth < 768 ? 'stretch' : 'flex-start',
+}}>
               {/* Sort button */}
               <button
                 onClick={toggleSortOrder}
@@ -914,22 +934,25 @@ const handleDrop = (e) => {
             <div style={{ display: "grid", gap: "1rem" }}>
               {sortedDocuments.map((doc) => (
                 <div
-                  key={doc.id}
-                  onClick={() => navigate(`/document/${doc.id}`)}
-                  style={{
-                    ...styles.card.base,
-                    padding: "1.25rem",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    border: selectedDocIds.includes(doc.id)
-                      ? `2px solid ${colors.primary}`
-                      : `1px solid ${colors.gray[200]}`,
-                    backgroundColor: selectedDocIds.includes(doc.id)
-                      ? colors.primaryLight
-                      : colors.white,
-                  }}
+  key={doc.id}
+  onClick={() => navigate(`/document/${doc.id}`)}
+  style={{
+    ...styles.card.base,
+    padding: '1rem',  // Reduced from 1.25rem
+    display: 'flex',
+    flexDirection: windowWidth < 640 ? 'column' : 'row',  // Stack on mobile
+    justifyContent: 'space-between',
+    alignItems: windowWidth < 640 ? 'stretch' : 'center',
+    cursor: 'pointer',
+    border: selectedDocIds.includes(doc.id) 
+      ? `2px solid ${colors.primary}` 
+      : `1px solid ${colors.gray[200]}`,
+    backgroundColor: selectedDocIds.includes(doc.id) 
+      ? colors.primaryLight 
+      : colors.white,
+    gap: '1rem',
+    overflow: 'hidden', 
+  }}
                   onMouseEnter={(e) => {
                     if (!selectedDocIds.includes(doc.id)) {
                       Object.assign(e.currentTarget.style, styles.card.hover);
@@ -945,20 +968,21 @@ const handleDrop = (e) => {
                     }
                   }}
                 >
-                  <div
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      gap: "1rem",
-                      alignItems: "center",
-                    }}
-                  >
+                  <div style={{ 
+  flex: 1, 
+  display: 'flex', 
+  gap: windowWidth < 768 ? '0.5rem' : '0.75rem',  // Reduced from 1rem
+  alignItems: 'center',
+  flexWrap: 'wrap',  // Allow wrapping on small screens
+  minWidth: 0,
+  overflow: 'hidden',
+}}>
                     {/* Checkbox */}
                     <button
                       onClick={(e) => toggleDocumentSelection(doc.id, e)}
                       style={{
-                        width: "40px",
-                        height: "40px",
+                        width: windowWidth < 640 ? '32px' : '40px',  // Smaller on mobile
+    height: windowWidth < 640 ? '32px' : '40px',
                         borderRadius: "0.5rem",
                         border: `2px solid ${selectedDocIds.includes(doc.id) ? colors.primary : colors.gray[300]}`,
                         backgroundColor: selectedDocIds.includes(doc.id)
@@ -1002,14 +1026,14 @@ const handleDrop = (e) => {
                     {/* Document Icon */}
                     <div
                       style={{
-                        width: "48px",
-                        height: "48px",
+                        width: windowWidth < 640 ? '36px' : '48px',  // Smaller on mobile
+  height: windowWidth < 640 ? '36px' : '48px',
                         borderRadius: "0.5rem",
                         background: `linear-gradient(135deg, ${colors.primaryLight} 0%, ${colors.infoLight} 100%)`,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "1.5rem",
+                        fontSize: windowWidth < 640 ? '1.25rem' : '1.5rem',  
                         flexShrink: 0,
                       }}
                     >
@@ -1017,27 +1041,31 @@ const handleDrop = (e) => {
                     </div>
 
                     {/* Document Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3
-                        style={{
-                          fontWeight: "600",
-                          marginBottom: "0.5rem",
-                          color: colors.gray[800],
-                          fontSize: "1rem",
-                        }}
-                      >
+                    <div style={{ 
+  flex: 1, 
+  minWidth: 0,  // Important for text truncation
+  maxWidth: '100%',  // Prevent overflow
+}}>
+                      <h3 style={{
+    fontWeight: '600',
+    marginBottom: '0.5rem',
+    color: colors.gray[800],
+    fontSize: windowWidth < 768 ? '0.9rem' : '1rem', 
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }}>
                         {doc.filename}
                       </h3>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "1rem",
-                          fontSize: "0.75rem",
-                          color: colors.gray[600],
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                        }}
-                      >
+  <div style={{
+    display: 'flex',
+    gap: '0.5rem',  // Reduced
+    fontSize: '0.75rem',
+    color: colors.gray[600],
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    overflow: 'hidden',
+  }}>
                         <span
                           style={{
                             display: "flex",
@@ -1061,7 +1089,7 @@ const handleDrop = (e) => {
                         >
                           {doc.status.replace("_", " ")}
                         </span>
-                        {doc.upload_time && (
+                        {doc.upload_time && windowWidth >= 640 &&  (
                           <span
                             style={{
                               display: "flex",
@@ -1097,7 +1125,10 @@ const handleDrop = (e) => {
                     style={mergeStyles(
                       styles.button.base,
                       styles.button.danger,
-                      { padding: "0.5rem 1rem" },
+                      { padding: "0.5rem 1rem",
+                        width: windowWidth < 640 ? '100%' : 'auto',  // Full width on mobile
+      justifyContent: 'center', 
+                       },
                     )}
                     onMouseEnter={(e) => {
                       e.stopPropagation();

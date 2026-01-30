@@ -20,10 +20,17 @@ function DocumentDetail({ token }) {
   const navigate = useNavigate();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
     fetchDocument();
   }, [id]);
+
+  useEffect(() => {
+  const handleResize = () => setWindowWidth(window.innerWidth);
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
 
   const fetchDocument = async () => {
     try {
@@ -133,16 +140,16 @@ function DocumentDetail({ token }) {
           zIndex: 10,
         }}
       >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            padding: "1rem 2rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <div style={{
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: windowWidth < 768 ? '1rem' : '1rem 2rem',  // Reduce padding on mobile
+  display: 'flex',
+  flexDirection: windowWidth < 768 ? 'column' : 'row',  // Stack on mobile
+  justifyContent: 'space-between',
+  alignItems: windowWidth < 768 ? 'stretch' : 'center',
+  gap: '1rem',
+}}>
           <button
             onClick={() => navigate("/dashboard")}
             style={mergeStyles(styles.button.base, styles.button.secondary)}
@@ -177,104 +184,112 @@ function DocumentDetail({ token }) {
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
-        {/* Document Header */}
+      <div style={{ 
+  maxWidth: '1200px', 
+  margin: '0 auto', 
+  padding: windowWidth < 768 ? '1rem' : '2rem',
+  width: '100%',
+  boxSizing: 'border-box',
+}}>
+       {/* Document Header */}
+<div
+  style={{
+    ...styles.card.base,
+    marginBottom: "2rem",
+    background: `linear-gradient(135deg, ${colors.white} 0%, ${colors.gray[50]} 100%)`,
+  }}
+>
+  <div style={{ display: "flex", alignItems: "start", gap: "1.5rem", flexWrap: "wrap" }}>
+    {/* Document Icon */}
+    <div
+      style={{
+        width: windowWidth < 768 ? "60px" : "80px",
+        height: windowWidth < 768 ? "60px" : "80px",
+        borderRadius: "1rem",
+        background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.info} 100%)`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: windowWidth < 768 ? "2rem" : "2.5rem",
+        flexShrink: 0,
+        boxShadow: "0 4px 6px rgba(37, 99, 235, 0.2)",
+      }}
+    >
+      📄
+    </div>
+
+    {/* Document Info */}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <h1
+        style={{
+          fontSize: windowWidth < 768 ? "1.5rem" : "1.875rem",
+          fontWeight: "bold",
+          marginBottom: "1rem",
+          color: colors.gray[900],
+          wordBreak: "break-word",
+        }}
+      >
+        {document.filename}
+      </h1>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            windowWidth < 768 ? "1fr" : "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "1rem",
+          fontSize: "0.875rem",
+        }}
+      >
         <div
           style={{
-            ...styles.card.base,
-            marginBottom: "2rem",
-            background: `linear-gradient(135deg, ${colors.white} 0%, ${colors.gray[50]} 100%)`,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "start", gap: "1.5rem" }}>
-            {/* Document Icon */}
-            <div
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "1rem",
-                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.info} 100%)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "2.5rem",
-                flexShrink: 0,
-                boxShadow: "0 4px 6px rgba(37, 99, 235, 0.2)",
-              }}
-            >
-              📄
-            </div>
-
-            {/* Document Info */}
-            <div style={{ flex: 1 }}>
-              <h1
-                style={{
-                  fontSize: "1.875rem",
-                  fontWeight: "bold",
-                  marginBottom: "1rem",
-                  color: colors.gray[900],
-                }}
-              >
-                {document.filename}
-              </h1>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "1rem",
-                  fontSize: "0.875rem",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <FiInfo style={{ color: colors.gray[400] }} />
-                  <span style={{ color: colors.gray[600] }}>ID:</span>
-                  <span style={{ fontWeight: "600", color: colors.gray[800] }}>
-                    {document.id}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <FiFileText style={{ color: colors.gray[400] }} />
-                  <span style={{ color: colors.gray[600] }}>Status:</span>
-                  <span
-                    style={{
-                      ...styles.badge.base,
-                      ...getStatusBadge(document.status),
-                    }}
-                  >
-                    {document.status.replace("_", " ")}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <FiCalendar style={{ color: colors.gray[400] }} />
-                  <span style={{ color: colors.gray[600] }}>Uploaded:</span>
-                  <span style={{ fontWeight: "500", color: colors.gray[700] }}>
-                    {document.upload_time
-                      ? new Date(document.upload_time).toLocaleString()
-                      : "N/A"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <FiInfo style={{ color: colors.gray[400] }} />
+          <span style={{ color: colors.gray[600] }}>ID:</span>
+          <span style={{ fontWeight: "600", color: colors.gray[800] }}>
+            {document.id}
+          </span>
         </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <FiFileText style={{ color: colors.gray[400] }} />
+          <span style={{ color: colors.gray[600] }}>Status:</span>
+          <span
+            style={{
+              ...styles.badge.base,
+              ...getStatusBadge(document.status),
+            }}
+          >
+            {document.status.replace("_", " ")}
+          </span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <FiCalendar style={{ color: colors.gray[400] }} />
+          <span style={{ color: colors.gray[600] }}>Uploaded:</span>
+          <span style={{ fontWeight: "500", color: colors.gray[700] }}>
+            {document.upload_time
+              ? new Date(document.upload_time || document.created_at).toLocaleString()
+              : "N/A"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* AI Summary */}
         {metadata.summary && (
@@ -349,7 +364,7 @@ function DocumentDetail({ token }) {
                     style={{ fontSize: "1.25rem", color: colors.info }}
                   />
                   <strong
-                    style={{ color: colors.gray[700], fontSize: "0.875rem" }}
+                    style={{ color: colors.gray[700], fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem'  }}
                   >
                     Dates ({metadata.dates.length})
                   </strong>
@@ -362,20 +377,20 @@ function DocumentDetail({ token }) {
                   }}
                 >
                   {metadata.dates.map((date, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        backgroundColor: colors.infoLight,
-                        color: "#1e40af",
-                        borderRadius: "9999px",
-                        fontSize: "0.875rem",
-                        fontWeight: "500",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.25rem",
-                      }}
-                    >
+        <span
+          key={idx}
+          style={{
+            padding: windowWidth < 768 ? '0.4rem 0.8rem' : '0.5rem 1rem',  // Smaller on mobile
+            backgroundColor: colors.infoLight,
+            color: '#1e40af',
+            borderRadius: '9999px',
+            fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem',  // Smaller on mobile
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+          }}
+        >
                       {date}
                     </span>
                   ))}
@@ -398,7 +413,7 @@ function DocumentDetail({ token }) {
                     style={{ fontSize: "1.25rem", color: colors.warning }}
                   />
                   <strong
-                    style={{ color: colors.gray[700], fontSize: "0.875rem" }}
+                    style={{ color: colors.gray[700], fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem'  }}
                   >
                     Email Addresses ({metadata.emails.length})
                   </strong>
@@ -414,11 +429,11 @@ function DocumentDetail({ token }) {
                     <span
                       key={idx}
                       style={{
-                        padding: "0.5rem 1rem",
+                        padding: windowWidth < 768 ? '0.4rem 0.8rem' : '0.5rem 1rem',
                         backgroundColor: colors.warningLight,
                         color: "#92400e",
                         borderRadius: "9999px",
-                        fontSize: "0.875rem",
+                        fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem',  
                         fontWeight: "500",
                       }}
                     >
@@ -444,7 +459,7 @@ function DocumentDetail({ token }) {
                     style={{ fontSize: "1.25rem", color: colors.success }}
                   />
                   <strong
-                    style={{ color: colors.gray[700], fontSize: "0.875rem" }}
+                    style={{ color: colors.gray[700], fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem'  }}
                   >
                     Currency Amounts ({metadata.amounts.length})
                   </strong>
@@ -460,11 +475,11 @@ function DocumentDetail({ token }) {
                     <span
                       key={idx}
                       style={{
-                        padding: "0.5rem 1rem",
+                        padding: windowWidth < 768 ? '0.4rem 0.8rem' : '0.5rem 1rem',
                         backgroundColor: colors.successLight,
                         color: "#065f46",
                         borderRadius: "9999px",
-                        fontSize: "0.875rem",
+                        fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem',
                         fontWeight: "600",
                       }}
                     >
@@ -512,6 +527,7 @@ function DocumentDetail({ token }) {
                   display: "flex",
                   alignItems: "center",
                   gap: "0.75rem",
+                  flexWrap: 'wrap',
                 }}
               >
                 <FiFileText
@@ -519,7 +535,7 @@ function DocumentDetail({ token }) {
                 />
                 <h2
                   style={{
-                    fontSize: "1.25rem",
+                    fontSize: windowWidth < 768 ? '1.1rem' : '1.25rem',  
                     fontWeight: "bold",
                     color: colors.gray[800],
                   }}
@@ -530,6 +546,7 @@ function DocumentDetail({ token }) {
                   style={{
                     ...styles.badge.base,
                     ...styles.badge.info,
+                    fontSize: windowWidth < 768 ? '0.75rem' : '0.875rem',
                   }}
                 >
                   {document.content.length.toLocaleString()} characters
@@ -541,6 +558,8 @@ function DocumentDetail({ token }) {
                 onClick={copyToClipboard}
                 style={mergeStyles(styles.button.base, styles.button.primary, {
                   padding: "0.5rem 1rem",
+                  fontSize: windowWidth < 768 ? '0.8rem' : '0.875rem',  // Smaller on mobile
+            width: windowWidth < 768 ? '100%' : 'auto',
                 })}
                 onMouseEnter={(e) =>
                   Object.assign(e.target.style, styles.button.primaryHover)
@@ -559,17 +578,18 @@ function DocumentDetail({ token }) {
             <div
               style={{
                 backgroundColor: colors.gray[900],
-                padding: "1.5rem",
-                borderRadius: "0.75rem",
-                maxHeight: "500px",
-                overflowY: "auto",
-                whiteSpace: "pre-wrap",
-                fontFamily: '"Fira Code", "Courier New", monospace',
-                fontSize: "0.875rem",
-                lineHeight: "1.7",
-                color: colors.gray[100],
-                boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
-                position: "relative",
+      padding: windowWidth < 768 ? '1rem' : '1.5rem',  // Less padding on mobile
+      borderRadius: '0.75rem',
+      maxHeight: windowWidth < 768 ? '300px' : '500px',  // Shorter on mobile
+      overflowY: 'auto',
+      whiteSpace: 'pre-wrap',
+      fontFamily: '"Fira Code", "Courier New", monospace',
+      fontSize: windowWidth < 768 ? '0.75rem' : '0.875rem',  // Smaller on mobile
+      lineHeight: '1.7',
+      color: colors.gray[100],
+      boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
+      position: 'relative',
+      wordBreak: 'break-word', 
               }}
             >
               {document.content}
